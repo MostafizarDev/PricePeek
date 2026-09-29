@@ -7,6 +7,7 @@ const { normalizeProduct } = require('../lib/normalize');
 const { getStoreStatus } = require('../lib/storeRegistry');
 const { groupProducts } = productMatcher;
 const { saveSnapshots } = require('../lib/priceHistory');
+const { buildDeals } = require('../lib/deals');
 
 const scrapers = [
   new DarazScraper(),
@@ -75,6 +76,7 @@ async function searchAll(query) {
   return {
     products: normalizedProducts,
     productGroups,
+    deals: buildDeals(productGroups),
     errors,
     sources: settled.map(({ products: _, ...source }) => source),
   };
