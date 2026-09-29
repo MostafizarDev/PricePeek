@@ -230,14 +230,14 @@ function renderProducts(products) {
         let metaHTML = '';
         if (product.rating) {
             const ratingFixed = product.rating.toFixed(1);
-            metaHTML = `⭐ ${ratingFixed}`;
+            metaHTML = `${ratingFixed}`;
             if (product.reviewCount) metaHTML += ` (${product.reviewCount} reviews)`;
-            if (product.soldCount) metaHTML += ` • 🔥 ${product.soldCount} sold`;
+            if (product.soldCount) metaHTML += ` • ${product.soldCount} sold`;
         }
 
         return `
             <div class="product-card ${isCheapest ? 'best-choice' : ''}" data-id="${product.id}">
-                ${isCheapest ? '<span class="best-badge">🏆 Best Price</span>' : ''}
+                ${isCheapest ? '<span class="best-badge">Best Price</span>' : ''}
                 <span class="live-badge">LIVE</span>
                 <span class="marketplace-badge ${marketplaceClass}">${product.marketplace} ${product.isOfficial ? '✅ Official' : ''}</span>
                 <div class="product-image-container">
@@ -281,17 +281,17 @@ function renderPriceSummary(products) {
     const savings = Math.max(0, highest.price - cheapest.price);
     box.innerHTML = `
       <div class="summary-card">
-        <div class="summary-label">💰 Lowest price found</div>
+        <div class="summary-label">Lowest price found</div>
         <strong>${formatBDT(cheapest.price)}</strong>
         <span>${escapeHTML(cheapest.marketplace || 'Store')}</span>
       </div>
       <div class="summary-card">
-        <div class="summary-label">📊 Price range</div>
+        <div class="summary-label">Price range</div>
         <strong>${formatBDT(cheapest.price)} — ${formatBDT(highest.price)}</strong>
         <span>${valid.length} in-stock offers compared</span>
       </div>
       <div class="summary-card">
-        <div class="summary-label">💸 Possible saving</div>
+        <div class="summary-label">Possible saving</div>
         <strong>${formatBDT(savings)}</strong>
         <span>vs. highest listed price</span>
       </div>`;
@@ -370,7 +370,7 @@ function toggleWishlist(productId) {
         showNotification('Removed from wishlist', 'info');
     } else {
         APP_STATE.wishlist.push({...product, savedAt: new Date().toISOString()});
-        showNotification('Added to wishlist! ❤️', 'success');
+        showNotification('Added to wishlist', 'success');
     }
     localStorage.setItem('wishlist', JSON.stringify(APP_STATE.wishlist));
     updateWishlistCount();
@@ -423,7 +423,7 @@ function toggleCompare(productId) {
             return;
         }
         APP_STATE.comparisonList.push(product);
-        showNotification('Added to comparison! ⚖️', 'success');
+        showNotification('Added to comparison', 'success');
     }
     localStorage.setItem('comparison', JSON.stringify(APP_STATE.comparisonList));
     updateComparisonUI();
