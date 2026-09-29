@@ -218,8 +218,8 @@ function renderProducts(products) {
         return `
             <div class="product-card ${isCheapest ? 'best-choice' : ''}" data-id="${product.id}">
                 ${isCheapest ? '<span class="best-badge">🏆 Best Price</span>' : ''}
-                <span class="live-badge">🔴 LIVE</span>
-                <span class="marketplace-badge ${marketplaceClass}">🏪 ${product.marketplace} ${product.isOfficial ? '✅ Official' : ''}</span>
+                <span class="live-badge">LIVE</span>
+                <span class="marketplace-badge ${marketplaceClass}">${product.marketplace} ${product.isOfficial ? '✅ Official' : ''}</span>
                 <div class="product-image-container">
                     ${product.image ? `<img src="${product.image}" alt="${product.name}" onerror="this.parentElement.innerHTML='<span class=\'product-image-placeholder\'>📦</span>'">` : '<span class="product-image-placeholder">📦</span>'}
                 </div>
@@ -231,10 +231,10 @@ function renderProducts(products) {
                 </div>
                 ${metaHTML ? `<div class="product-meta" style="font-size:0.72rem; color:var(--gray-500); margin-top:4px;">${metaHTML}</div>` : ''}
                 <div class="stock-status ${product.inStock ? 'in-stock' : 'out-stock'}">
-                    ${product.inStock ? '🟢 In Stock' : '🔴 Out of Stock'}
+                    ${product.inStock ? 'In Stock' : 'Out of Stock'}
                 </div>
                 ${product.coupons && product.coupons.length > 0 ? `<div class="coupon-row">${product.coupons.map(c => `<span class="coupon-chip" onclick="copyToClipboard('${c.code}')">🎫 ${c.code} (${c.type==='percentage' ? c.discount+'%' : '৳'+c.discount})</span>`).join('')}</div>` : ''}
-                ${product.cashback && product.cashback.length > 0 ? `<div class="coupon-row">${product.cashback.map(c => `<span class="cashback-chip">💰 ${c.provider} ${c.percentage}% (Max ৳${c.maxAmount})</span>`).join('')}</div>` : ''}
+                ${product.cashback && product.cashback.length > 0 ? `<div class="coupon-row">${product.cashback.map(c => `<span class="cashback-chip">${c.provider} ${c.percentage}% (Max ৳${c.maxAmount})</span>`).join('')}</div>` : ''}
                 <div class="card-actions">
                     <a href="${product.url || '#'}" target="_blank" rel="noopener noreferrer" class="btn-visit btn-primary" onclick="trackClick('${product.marketplace}', '${product.name}')">Visit Store →</a>
                     <button class="btn-wishlist ${isWishlisted ? 'active' : ''}" onclick="toggleWishlist('${product.id}')">${isWishlisted ? '❤️' : '🤍'}</button>
