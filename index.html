@@ -36,7 +36,7 @@
         <!-- Hero Search Section -->
         <section class="hero-section" id="heroSection">
             <h1 class="hero-title">Peek Before You Pay.</h1>
-            <p class="hero-subtitle">Compare prices across Daraz, Star Tech, Ryans, Pickaboo and more — all in one place.</p>
+            <p class="hero-subtitle">Search a product or paste a product link. PricePeekBD checks supported Bangladesh stores and shows where the listed price is lower.</p>
             
             <!-- একটিমাত্র সার্চ বক্স (কীওয়ার্ড ও URL উভয়) -->
             <div class="search-wrapper">
@@ -66,24 +66,13 @@
             <span id="statusText">Ready to search</span>
         </div>
 
-        <!-- Supported Stores Slider -->
+        <!-- Currently Compared Stores Slider -->
         <section class="stores-section" id="stores-section">
             <h3 class="stores-title">Supported Stores</h3>
             <div class="slider-container">
                 <button class="slider-arrow left" onclick="slideStores(-1)">❮</button>
                 <div class="store-slider" id="storeSlider">
-                    <div class="store-card">
-                        <img src="images/stores/daraz.png" alt="Daraz" class="store-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                        <span class="store-logo-fallback" style="display:none; font-size:24px;">🛍️</span>
-                    </div>
-                    <div class="store-card">
-                        <img src="images/stores/startech.png" alt="Star Tech" class="store-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                        <span class="store-logo-fallback" style="display:none; font-size:24px;">💻</span>
-                    </div>
-                    <div class="store-card">
-                        <img src="images/stores/ryans.png" alt="Ryans" class="store-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                        <span class="store-logo-fallback" style="display:none; font-size:24px;">🖥️</span>
-                    </div>
+                    <div class="store-card"><img src="images/stores/daraz.png" alt="Daraz" class="store-logo"><span>Daraz</span></div><div class="store-card"><img src="images/stores/startech.png" alt="Star Tech" class="store-logo"><span>Star Tech</span></div><div class="store-card"><img src="images/stores/ryans.png" alt="Ryans" class="store-logo"><span>Ryans</span></div>
                     <div class="store-card">
                         <img src="images/stores/pickaboo.png" alt="Pickaboo" class="store-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                         <span class="store-logo-fallback" style="display:none; font-size:24px;">📱</span>
