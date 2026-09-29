@@ -905,6 +905,17 @@ body.dark .modal-overlay { background: rgba(0,0,0,0.7); }
     margin-left: 8px;
 }
 
+
+.theme-toggle svg {
+    width: 19px;
+    height: 19px;
+    display: block;
+    transition: transform 0.25s ease;
+}
+
+.theme-toggle:hover svg {
+    transform: rotate(10deg) scale(1.05);
+}
 .theme-toggle:hover {
     background: var(--primary-light);
     border-color: var(--primary);
