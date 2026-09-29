@@ -5,6 +5,8 @@ const RokomariScraper = require('../lib/rokomari');
 const productMatcher = require('../lib/matcher');
 const { normalizeProduct } = require('../lib/normalize');
 const { getStoreStatus } = require('../lib/storeRegistry');
+const { groupProducts } = productMatcher;
+const { saveSnapshots } = require('../lib/priceHistory');
 
 const scrapers = [
   new DarazScraper(),
@@ -65,8 +67,14 @@ async function searchAll(query) {
     .map(product => ({ ...product, _score: scoreProduct(product, query) }))
     .sort((a, b) => b._score - a._score || (a.price ?? Infinity) - (b.price ?? Infinity));
 
+  const normalizedProducts = scored.map(({ _score, ...product }) => product);
+  const productGroups = groupProducts(normalizedProducts);
+
+  await saveSnapshots(normalizedProducts);
+
   return {
-    products: scored.map(({ _score, ...product }) => product),
+    products: normalizedProducts,
+    productGroups,
     errors,
     sources: settled.map(({ products: _, ...source }) => source),
   };
