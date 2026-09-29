@@ -11,17 +11,17 @@
     <header class="header">
         <div class="header-content">
             <a href="#" class="logo" onclick="location.reload()">
-                <span class="logo-icon">🏷️</span>
+                <span class="logo-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M20.5 13.5 13.5 20.5 3.5 10.5V3.5h7l10 10Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="7.5" cy="7.5" r="1.2" fill="currentColor"/></svg></span>
                 PricePeekBD
             </a>
             <nav class="nav-links">
-                <button class="nav-link active" onclick="scrollToSearch()">🔍 Search</button>
-                <button class="nav-link" onclick="showDealsPage()">🏷️ Best Deals</button>
+                <button class="nav-link active" onclick="scrollToSearch()"><svg viewBox="0 0 24 24" fill="none"><path d="m21 21-4.35-4.35M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg> Search</button>
+                <button class="nav-link" onclick="showDealsPage()">Best Deals</button>
                 <button class="nav-link" onclick="toggleWishlistDrawer()">
-                    ❤️ Wishlist <span id="wishlist-count">0</span>
+                    Wishlist <span id="wishlist-count">0</span>
                 </button>
                 <button class="nav-link" onclick="showComparison()">
-                    ⚖️ Compare <span id="compare-count">0</span>
+                    Compare <span id="compare-count">0</span>
                 </button>
                 <!-- Dark/Light Toggle -->
                 <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark/light mode">
@@ -45,7 +45,7 @@
                            placeholder="Search product or paste any product URL…"
                            onkeypress="if(event.key==='Enter') handleSmartSearch()">
                     <button class="search-btn" onclick="handleSmartSearch()">
-                        <span>🔍</span> Find
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none"><path d="m21 21-4.35-4.35M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Find
                     </button>
                 </div>
             </div>
