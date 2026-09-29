@@ -1,13 +1,19 @@
 // ============ UTILITY FUNCTIONS ============
 
+let notificationTimer;
+
 function showNotification(message, type = 'info') {
     const notification = document.getElementById('notification');
     if (!notification) return;
-    notification.textContent = message;
+    const labels = { success: 'Done', error: 'Error', info: 'Notice' };
+    notification.setAttribute('role', 'status');
+    notification.setAttribute('aria-live', 'polite');
+    notification.textContent = `${labels[type] || labels.info}: ${message}`;
     notification.className = `notification ${type} show`;
-    setTimeout(() => {
+    clearTimeout(notificationTimer);
+    notificationTimer = setTimeout(() => {
         notification.classList.remove('show');
-    }, 3000);
+    }, 3200);
 }
 
 function formatPrice(price) {
