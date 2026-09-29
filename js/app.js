@@ -200,7 +200,7 @@ function sortResults() {
     applyFiltersAndSort();
 }
 
-function renderProductSkeletons(count = 6) {
+function renderProductSkeletons(count = 8) {
     return Array.from({length: count}, () => `
         <div class="product-skeleton" aria-hidden="true">
             <div class="skeleton-image"></div>
@@ -212,11 +212,13 @@ function renderProductSkeletons(count = 6) {
         </div>`).join('');
 }
 
+function renderSearchError(message = 'We could not load prices right now.') { const grid=document.getElementById('productGrid'); if(!grid)return; grid.innerHTML='<div class="error-state"><h3>Something went wrong</h3><p>'+escapeHTML(message)+'</p><button type="button" onclick="refreshResults()">Try Again</button></div>'; }
+
 // ============ RENDER PRODUCTS (rating with one decimal) ============
 function renderProducts(products) {
     const grid = document.getElementById('productGrid');
     if (products.length === 0) {
-        grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px; color:#9CA3AF;">No products match current filters</div>';
+        grid.innerHTML = '<div class="empty-state"><h3>No matching products</h3><p>Try another keyword or remove one of the active filters.</p></div>';
         return;
     }
     const cheapest = products.filter(p => p.inStock && p.price != null).sort((a, b) => a.price - b.price)[0];
