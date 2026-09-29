@@ -200,6 +200,18 @@ function sortResults() {
     applyFiltersAndSort();
 }
 
+function renderProductSkeletons(count = 6) {
+    return Array.from({length: count}, () => `
+        <div class="product-skeleton" aria-hidden="true">
+            <div class="skeleton-image"></div>
+            <div class="skeleton-line wide"></div>
+            <div class="skeleton-line"></div>
+            <div class="skeleton-price"></div>
+            <div class="skeleton-line short"></div>
+            <div class="skeleton-actions"></div>
+        </div>`).join('');
+}
+
 // ============ RENDER PRODUCTS (rating with one decimal) ============
 function renderProducts(products) {
     const grid = document.getElementById('productGrid');
