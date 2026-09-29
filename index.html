@@ -84,7 +84,7 @@
         <!-- Results Section -->
         <section class="results-section" id="resultsSection">
             <div class="results-header">
-                <h2 class="results-count" id="resultsCount">Found 0 products</h2>
+                <div class="results-heading-wrap"><span class="results-eyebrow">PRICE COMPARISON</span><h2 class="results-count" id="resultsCount">Found 0 products</h2></div>
                 <div class="results-actions">
                     <button class="filter-btn" onclick="refreshResults()"><svg class="ui-icon" viewBox="0 0 24 24" fill="none"><path d="M20 11a8 8 0 1 0 1 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M20 4v7h-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> Refresh Prices</button>
                     <select class="sort-select" id="sortSelect" onchange="sortResults()">
@@ -118,10 +118,7 @@
             </div>
 
             <!-- Loading -->
-            <div class="loading-spinner" id="loadingSpinner">
-                <div class="spinner"></div>
-                <p id="loadingText">Fetching live prices from all marketplaces...</p>
-            </div>
+            <div class="loading-spinner" id="loadingSpinner"><div class="results-loading-head"><div class="spinner"></div><div><strong>Comparing available prices</strong><p id="loadingText">Checking supported stores for live prices...</p></div></div><div class="loading-skeleton-grid" id="loadingSkeletonGrid"></div></div>
 
             <!-- Product Grid -->
             <div class="product-grid" id="productGrid"></div>
