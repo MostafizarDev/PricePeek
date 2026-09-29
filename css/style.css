@@ -1201,3 +1201,11 @@ body.dark{background:#0b1120;color:#e5e7eb}.dark .header,.dark .search-container
 .dark .faq-grid details[open]{border-color:#31527a}
 @media(max-width:800px){.trust-strip{grid-template-columns:repeat(2,1fr);margin-bottom:48px}.how-grid{grid-template-columns:1fr}.how-section,.faq-section{margin-bottom:55px}}
 @media(max-width:520px){.trust-item{padding:16px 10px}.trust-item strong{font-size:1.05rem}.trust-item span{font-size:.66rem}.section-heading h2{font-size:1.75rem}.how-card{padding:22px}}
+
+
+/* Product loading skeletons */
+.product-skeleton{border:1px solid #e5e7eb;border-radius:18px;background:#fff;padding:12px;overflow:hidden}
+.skeleton-image,.skeleton-line,.skeleton-price,.skeleton-actions{background:linear-gradient(90deg,#eef2f7 25%,#f8fafc 50%,#eef2f7 75%);background-size:200% 100%;animation:skeleton-shimmer 1.25s infinite;border-radius:9px}
+.skeleton-image{height:145px;margin-bottom:14px}.skeleton-line{height:10px;width:82%;margin:9px 0}.skeleton-line.wide{width:94%}.skeleton-line.short{width:42%}.skeleton-price{height:19px;width:48%;margin:14px 0}.skeleton-actions{height:34px;margin-top:16px}
+@keyframes skeleton-shimmer{to{background-position:-200% 0}}
+.dark .product-skeleton{background:#111827;border-color:#243244}.dark .skeleton-image,.dark .skeleton-line,.dark .skeleton-price,.dark .skeleton-actions{background:linear-gradient(90deg,#1a2535 25%,#223047 50%,#1a2535 75%);background-size:200% 100%}
