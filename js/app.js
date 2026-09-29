@@ -177,7 +177,7 @@ function applyFiltersAndSort() {
     APP_STATE.filteredProducts = products;
     renderProducts(products);
     updateBestDeal(products);
-    document.getElementById('resultsCount').textContent = `Found ${products.length} products`;
+    document.getElementById('resultsCount').textContent = `Found ${products.length} offers`;
 }
 
 function toggleFilter(button, filter) {
@@ -199,9 +199,9 @@ function renderProducts(products) {
         grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px; color:#9CA3AF;">No products match current filters</div>';
         return;
     }
-    const cheapest = products.filter(p => p.inStock && p.price).sort((a, b) => a.price - b.price)[0];
+    const cheapest = products.filter(p => p.inStock && p.price != null).sort((a, b) => a.price - b.price)[0];
     grid.innerHTML = products.map(product => {
-        const isCheapest = cheapest && product.id === cheapest.id;
+        const isCheapest = cheapest && ((product.id && product.id === cheapest.id) || product.url === cheapest.url);
         const isWishlisted = APP_STATE.wishlist.some(w => w.id === product.id);
         const isCompared = APP_STATE.comparisonList.some(c => c.id === product.id);
         const marketplaceClass = getMarketplaceClass(product.marketplace);
@@ -223,10 +223,10 @@ function renderProducts(products) {
                 <div class="product-image-container">
                     ${product.image ? `<img src="${product.image}" alt="${product.name}" onerror="this.parentElement.innerHTML='<span class=\'product-image-placeholder\'>📦</span>'">` : '<span class="product-image-placeholder">📦</span>'}
                 </div>
-                <div class="product-name">${product.name || 'Unknown Product'}</div>
+                <div class="product-name">${escapeHTML(product.name || 'Unknown Product')}</div>
                 <div class="product-pricing">
-                    <span class="current-price">${formatPrice(product.price)}</span>
-                    ${product.originalPrice && product.originalPrice > product.price ? `<span class="original-price">${formatPrice(product.originalPrice)}</span>` : ''}
+                    <span class="current-price">${formatBDT(product.price)}</span>
+                    ${product.originalPrice && product.originalPrice > product.price ? `<span class="original-price">${formatBDT(product.originalPrice)}</span>` : ''}
                     ${product.discount > 0 ? `<span class="discount-badge">-${product.discount}%</span>` : ''}
                 </div>
                 ${metaHTML ? `<div class="product-meta" style="font-size:0.72rem; color:var(--gray-500); margin-top:4px;">${metaHTML}</div>` : ''}
@@ -236,7 +236,7 @@ function renderProducts(products) {
                 ${product.coupons && product.coupons.length > 0 ? `<div class="coupon-row">${product.coupons.map(c => `<span class="coupon-chip" onclick="copyToClipboard('${c.code}')">🎫 ${c.code} (${c.type==='percentage' ? c.discount+'%' : '৳'+c.discount})</span>`).join('')}</div>` : ''}
                 ${product.cashback && product.cashback.length > 0 ? `<div class="coupon-row">${product.cashback.map(c => `<span class="cashback-chip">💰 ${c.provider} ${c.percentage}% (Max ৳${c.maxAmount})</span>`).join('')}</div>` : ''}
                 <div class="card-actions">
-                    <a href="${product.url || '#'}" target="_blank" class="btn-visit btn-primary" onclick="trackClick('${product.marketplace}', '${product.name}')">Visit Store →</a>
+                    <a href="${product.url || '#'}" target="_blank" rel="noopener noreferrer" class="btn-visit btn-primary" onclick="trackClick('${product.marketplace}', '${product.name}')">Visit Store →</a>
                     <button class="btn-wishlist ${isWishlisted ? 'active' : ''}" onclick="toggleWishlist('${product.id}')">${isWishlisted ? '❤️' : '🤍'}</button>
                     <button class="btn-compare ${isCompared ? 'active' : ''}" onclick="toggleCompare('${product.id}')">⚖️</button>
                 </div>
@@ -245,6 +245,38 @@ function renderProducts(products) {
 }
 
 // ============ UPDATE BEST DEAL (review, price, sold centered) ============
+function renderPriceSummary(products) {
+    const valid = products.filter(p => p.inStock && p.price != null).sort((a,b) => a.price - b.price);
+    let box = document.getElementById('priceSummary');
+    if (!box) {
+        box = document.createElement('div');
+        box.id = 'priceSummary';
+        box.className = 'price-summary';
+        const banner = document.getElementById('bestDealBanner');
+        banner.parentNode.insertBefore(box, banner.nextSibling);
+    }
+    if (!valid.length) { box.innerHTML = ''; return; }
+    const cheapest = valid[0];
+    const highest = valid[valid.length - 1];
+    const savings = Math.max(0, highest.price - cheapest.price);
+    box.innerHTML = `
+      <div class="summary-card">
+        <div class="summary-label">💰 Lowest price found</div>
+        <strong>${formatBDT(cheapest.price)}</strong>
+        <span>${escapeHTML(cheapest.marketplace || 'Store')}</span>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">📊 Price range</div>
+        <strong>${formatBDT(cheapest.price)} — ${formatBDT(highest.price)}</strong>
+        <span>${valid.length} in-stock offers compared</span>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">💸 Possible saving</div>
+        <strong>${formatBDT(savings)}</strong>
+        <span>vs. highest listed price</span>
+      </div>`;
+}
+
 function updateBestDeal(products) {
     const banner = document.getElementById('bestDealBanner');
     const inStock = products.filter(p => p.inStock && p.price);
