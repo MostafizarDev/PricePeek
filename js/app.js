@@ -131,6 +131,14 @@ function slideStores(direction) {
     if (slider) slider.scrollBy({ left: direction * 140, behavior: 'smooth' });
 }
 
+// ============ THEME ICONS ============
+function getThemeIcon(mode) {
+    if (mode === 'light') {
+        return '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M12 2v2.2M12 19.8V22M4.93 4.93l1.56 1.56M17.51 17.51l1.56 1.56M2 12h2.2M19.8 12H22M4.93 19.07l1.56-1.56M17.51 6.49l1.56-1.56" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+    }
+    return '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20.2 15.2A8.5 8.5 0 0 1 8.8 3.8 8.6 8.6 0 1 0 20.2 15.2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>';
+}
+
 // ============ DARK/LIGHT MODE ============
 function initTheme() {
     const body = document.body;
@@ -141,15 +149,15 @@ function initTheme() {
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark') {
         body.classList.add('dark');
-        themeIcon.textContent = '☀️';
+        themeIcon.innerHTML = getThemeIcon('light');
     } else {
-        themeIcon.textContent = '🌙';
+        themeIcon.innerHTML = getThemeIcon('dark');
     }
 
     toggleBtn.addEventListener('click', () => {
         body.classList.toggle('dark');
         const isDark = body.classList.contains('dark');
-        themeIcon.textContent = isDark ? '☀️' : '🌙';
+        themeIcon.innerHTML = getThemeIcon(isDark ? 'light' : 'dark');
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
     });
 }
