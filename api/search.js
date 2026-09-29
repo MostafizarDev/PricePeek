@@ -1,187 +1,162 @@
 const DarazScraper = require('../lib/daraz');
 const StarTechScraper = require('../lib/startech');
-// const RyansScraper = require('../lib/ryans');   // Ryans সাময়িকভাবে বন্ধ
+const RyansScraper = require('../lib/ryans');
 const RokomariScraper = require('../lib/rokomari');
 const productMatcher = require('../lib/matcher');
+const { normalizeProduct } = require('../lib/normalize');
+const { getStoreStatus } = require('../lib/storeRegistry');
 
 const scrapers = [
   new DarazScraper(),
   new StarTechScraper(),
-  // new RyansScraper(),
+  new RyansScraper(),
   new RokomariScraper(),
 ];
 
 const cache = new Map();
-const CACHE_TTL = 15 * 60 * 1000; // ১৫ মিনিট
+const CACHE_TTL = 10 * 60 * 1000;
 
-// URL থেকে পণ্যের নাম বের করার সহায়ক ফাংশন
-function extractProductNameFromUrl(url) {
+function extractProductNameFromUrl(input) {
   try {
-    const { pathname } = new URL(url);
+    const { pathname } = new URL(input);
     const lastSegment = pathname.split('/').filter(Boolean).pop();
-    if (!lastSegment) return '';
-    const cleaned = lastSegment.replace(/[-_]/g, ' ').replace(/\s+/g, ' ').trim();
-    return cleaned;
-  } catch (e) {
-    return '';
+    return lastSegment
+      ? decodeURIComponent(lastSegment).replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim()
+      : '';
+  } catch { return ''; }
+}
+
+function scoreProduct(product, query) {
+  const tokens = String(query).toLowerCase().split(/\s+/).filter(Boolean);
+  if (!tokens.length) return 0;
+  const name = String(product.name || '').toLowerCase();
+  const matched = tokens.filter(token => name.includes(token)).length;
+  return matched / tokens.length;
+}
+
+async function runScraper(scraper, query) {
+  const started = Date.now();
+  try {
+    const products = await scraper.search(query);
+    return {
+      marketplace: scraper.marketplace,
+      products: (products || []).map(normalizeProduct),
+      latencyMs: Date.now() - started,
+      error: null,
+    };
+  } catch (error) {
+    return {
+      marketplace: scraper.marketplace,
+      products: [],
+      latencyMs: Date.now() - started,
+      error: error?.message || 'Scraper failed',
+    };
   }
+}
+
+async function searchAll(query) {
+  const settled = await Promise.all(scrapers.map(scraper => runScraper(scraper, query)));
+  const products = settled.flatMap(item => item.products);
+  const errors = settled
+    .filter(item => item.error)
+    .map(item => ({ marketplace: item.marketplace, error: item.error, latencyMs: item.latencyMs }));
+
+  const scored = products
+    .map(product => ({ ...product, _score: scoreProduct(product, query) }))
+    .sort((a, b) => b._score - a._score || (a.price ?? Infinity) - (b.price ?? Infinity));
+
+  return {
+    products: scored.map(({ _score, ...product }) => product),
+    errors,
+    sources: settled.map(({ products: _, ...source }) => source),
+  };
+}
+
+function sourceFromUrl(decodedUrl) {
+  return scrapers.find(scraper => {
+    try { return decodedUrl.includes(new URL(scraper.baseUrl).hostname); } catch { return false; }
+  });
 }
 
 module.exports = async (req, res) => {
+  res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
   const { q, url } = req.query;
 
-
-
-
-
-
-
-  // ----- অস্থায়ী ডিবাগ: Pickaboo পণ্যের পেজ ফেচ -----
- 
-  // ---------------------------------------------------
-
-
-
-
-
-
-  
-  // ================== URL মোড ==================
-  if (url) {
-    try {
+  try {
+    if (url) {
       const decodedUrl = decodeURIComponent(url);
       let sourceProduct = null;
+      const sourceScraper = sourceFromUrl(decodedUrl);
 
-      // ১. পণ্যের পেজ থেকে সম্পূর্ণ তথ্য আনার চেষ্টা (সংশ্লিষ্ট স্ক্র‍্যাপার দিয়ে)
-      for (const scraper of scrapers) {
-        const baseHost = scraper.baseUrl.replace('https://', '').replace('http://', '');
-        if (decodedUrl.includes(baseHost)) {
-          sourceProduct = await scraper.getProductFromUrl(decodedUrl);
-          break;
-        }
+      if (sourceScraper?.getProductFromUrl) {
+        try { sourceProduct = await sourceScraper.getProductFromUrl(decodedUrl); } catch {}
       }
 
-      // ২. যদি scraper ব্যর্থ হয়, তাহলে URL থেকেই নাম নিয়ে ন্যূনতম অবজেক্ট তৈরি
-      if (!sourceProduct || !sourceProduct.name) {
-        const productNameFromUrl = extractProductNameFromUrl(decodedUrl);
-        if (!productNameFromUrl) {
-          return res.json({ products: [], errors: [{ message: 'URL থেকে পণ্যের নাম বের করা যায়নি' }] });
-        }
+      const searchQuery = sourceProduct?.name
+        ? productMatcher.extractSearchKey(sourceProduct.name)
+        : extractProductNameFromUrl(decodedUrl);
 
-        // ডোমেইন থেকে মার্কেটপ্লেসের নাম অনুমান
-        let marketplaceGuess = 'Unknown';
-        try {
-          const host = new URL(decodedUrl).hostname.replace('www.', '');
-          const parts = host.split('.');
-          if (parts.length >= 2) marketplaceGuess = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
-        } catch (e) {}
-
-        sourceProduct = {
-          name: productNameFromUrl,
-          url: decodedUrl,
-          marketplace: marketplaceGuess,
-          price: null,
-          originalPrice: null,
-          image: null,
-          inStock: true,
-          coupons: [],
-          cashback: [],
-        };
+      if (!searchQuery) {
+        return res.status(400).json({ products: [], errors: [{ message: 'Could not identify the product from this URL.' }] });
       }
 
-      // ৩. সোর্স পণ্যের নাম থেকে একাধিক কীওয়ার্ড তৈরি (একটার পর একটা ট্রাই করা)
-let searchQuery = productMatcher.extractSearchKey(sourceProduct.name);
-if (!searchQuery || searchQuery.length < 3) {
-  // যদি extractSearchKey খুব ছোট বা খালি দেয়, তাহলে পুরো নাম থেকে সাধারণ শব্দ নিই
-  searchQuery = sourceProduct.name.replace(/[^a-zA-Z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
-  // প্রথম 4 টি শব্দ নেওয়া
-  const words = searchQuery.split(' ').slice(0, 4).join(' ');
-  searchQuery = words || sourceProduct.name;
-}
-console.log(`[URL] Using search key: "${searchQuery}"`);
-      
+      const key = `url:${searchQuery.toLowerCase()}`;
+      const cached = cache.get(key);
+      const result = cached && Date.now() - cached.timestamp < CACHE_TTL
+        ? { ...cached.data, cached: true }
+        : await searchAll(searchQuery);
 
-      // ৪. সব মার্কেটপ্লেসে সার্চ
-      const results = [];
-      const errors = [];
-      for (const scraper of scrapers) {
-        try {
-          const prods = await scraper.search(searchQuery);
-          results.push(...prods);
-          console.log(`[${scraper.marketplace}] Found ${prods.length} products`);
-        } catch (err) {
-          errors.push({ marketplace: scraper.marketplace, error: err.message });
-        }
+      if (!cached || Date.now() - cached.timestamp >= CACHE_TTL) {
+        cache.set(key, { data: result, timestamp: Date.now() });
       }
 
-      // ৫. সোর্স প্রোডাক্ট সবসময় শুরুতে যোগ করা (যদি না থাকে)
-      if (sourceProduct && sourceProduct.name) {
-        const alreadyExists = results.some(p => p.url === sourceProduct.url);
-        if (!alreadyExists) {
-          results.unshift(sourceProduct);
-        }
+      if (sourceProduct?.name) {
+        const normalizedSource = normalizeProduct({ ...sourceProduct, url: decodedUrl });
+        const withoutDuplicate = result.products.filter(p => p.url !== decodedUrl);
+        result.products = [normalizedSource, ...withoutDuplicate];
       }
-
-      // ৬. মূল পণ্যের সাথে সাদৃশ্য অনুযায়ী সাজানো (সোর্স প্রোডাক্ট উপরে)
-      if (sourceProduct) sourceProduct._sim = 1;
-      const originalQuery = sourceProduct ? sourceProduct.name.toLowerCase().trim() : '';
-      results.forEach(p => {
-        if (p._sim !== undefined) return;
-        const pName = (p.name || '').toLowerCase();
-        const tokens = originalQuery.split(/\s+/);
-        const matchCount = tokens.filter(t => pName.includes(t)).length;
-        p._sim = tokens.length ? matchCount / tokens.length : 0;
-      });
-      results.sort((a, b) => b._sim - a._sim);
-      const finalProducts = results.map(({ _sim, ...p }) => p);
 
       return res.json({
-        products: finalProducts,
-        sourceProduct,
-        errors: errors.length > 0 ? errors : undefined,
-        cached: false,
+        ...result,
+        sourceProduct: sourceProduct ? normalizeProduct({ ...sourceProduct, url: decodedUrl }) : null,
+        query: searchQuery,
+        fetchedAt: new Date().toISOString(),
+        storeStatus: getStoreStatus(),
       });
-    } catch (err) {
-      console.error('[URL] Error:', err);
-      return res.status(500).json({ error: 'URL প্রক্রিয়াকরণে সমস্যা' });
     }
-  }
 
-  // ================== সাধারণ কীওয়ার্ড সার্চ ==================
-  if (!q) return res.status(400).json({ error: 'q or url parameter required' });
-
-  const cacheKey = `search:${q}`;
-  const cachedEntry = cache.get(cacheKey);
-  if (cachedEntry && Date.now() - cachedEntry.timestamp < CACHE_TTL) {
-    return res.json({ products: cachedEntry.data, cached: true });
-  }
-
-  // ইউজার যা লিখেছে, সরাসরি তাই পাঠানো (কোনো সংক্ষেপণ নয়)
-  console.log(`Original query: "${q}"`);
-
-  const results = [];
-  const errors = [];
-  for (const scraper of scrapers) {
-    try {
-      const prods = await scraper.search(q);
-      results.push(...prods);
-      console.log(`[${scraper.marketplace}] Found ${prods.length} products`);
-    } catch (err) {
-      errors.push({ marketplace: scraper.marketplace, error: err.message });
+    if (!q || String(q).trim().length < 2) {
+      return res.status(400).json({ error: 'Please enter a product name or product URL.' });
     }
+
+    const query = String(q).trim().slice(0, 160);
+    const key = `search:${query.toLowerCase()}`;
+    const cached = cache.get(key);
+
+    let result;
+    let cachedFlag = false;
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      result = cached.data;
+      cachedFlag = true;
+    } else {
+      result = await searchAll(query);
+      cache.set(key, { data: result, timestamp: Date.now() });
+    }
+
+    return res.json({
+      ...result,
+      cached: cachedFlag,
+      query,
+      fetchedAt: new Date().toISOString(),
+      storeStatus: getStoreStatus(),
+    });
+  } catch (error) {
+    console.error('[PricePeek] search error', error);
+    return res.status(500).json({
+      error: 'Price comparison failed.',
+      message: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      products: [],
+    });
   }
-
-  // প্রাপ্ত ফলাফলকে মূল সার্চ টার্মের সাথে সাদৃশ্য অনুযায়ী সাজানো (বেশি মিল উপরে)
-  const originalQuery = q.toLowerCase().trim();
-  const scored = results.map(p => {
-    const pName = (p.name || '').toLowerCase();
-    const tokens = originalQuery.split(/\s+/);
-    const matchCount = tokens.filter(t => pName.includes(t)).length;
-    return { ...p, _sim: matchCount / tokens.length };
-  });
-  scored.sort((a, b) => b._sim - a._sim);
-  const finalProducts = scored.map(({ _sim, ...p }) => p);
-
-  cache.set(cacheKey, { data: finalProducts, timestamp: Date.now() });
-  res.json({ products: finalProducts, errors: errors.length ? errors : undefined, cached: false });
 };
