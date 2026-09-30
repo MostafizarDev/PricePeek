@@ -1252,3 +1252,83 @@ body.dark{background:radial-gradient(circle at 50% -10%,rgba(99,102,241,.13),tra
 @media(max-width:720px){.notification{right:14px!important;bottom:14px!important;min-width:0!important;width:calc(100vw - 28px)!important}.trust-strip{margin-left:0;margin-right:0}.how-grid{gap:12px}.how-card{padding:20px}.faq-grid details{padding:0 14px}.faq-grid summary{padding:15px 22px 15px 0}.product-grid{gap:12px}.product-card{padding:11px!important}.product-image-container{height:190px!important}.current-price{font-size:19px!important}.card-actions{grid-template-columns:1fr 36px 36px!important}.btn-wishlist,.btn-compare{width:36px!important}}
 @media(max-width:520px){.header-content{min-height:46px}.logo-icon{width:34px;height:34px}.logo{font-size:18px}.main-container{padding-left:10px;padding-right:10px}.hero-section{padding-top:48px}.trust-strip{grid-template-columns:repeat(2,1fr);border-radius:14px}.trust-item{padding:14px 8px}.how-section,.faq-section{padding-left:10px;padding-right:10px}.how-card{border-radius:14px}.product-image-container{height:210px!important}.product-name{min-height:38px;font-size:13px!important}.product-pricing{gap:5px}.current-price{font-size:18px!important}.stock-status{font-size:9px!important}.live-badge,.marketplace-badge{font-size:8px!important}.best-badge{font-size:8px!important}.card-actions{margin-top:10px!important}.btn-visit{font-size:10px!important}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.how-card,.trust-item,.product-card,.store-card,.summary-card{animation:none!important}.notification{animation:none!important}.search-btn,.filter-btn,.product-card,.store-card,.theme-toggle{transition:none!important}}
+
+/* ============ LEGACY PRODUCT PREVIEW CARD DESIGN ============
+   Preserve the original PricePeekBD compact preview-card appearance.
+   Do not alter product/search logic; this is visual-only. */
+.product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important;
+    gap: 14px !important;
+    justify-content: center !important;
+}
+
+.product-card {
+    padding: 10px !important;
+    text-align: center !important;
+}
+
+.product-image-container {
+    height: 100px !important;
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: #f1f5f9 !important;
+    border-radius: 8px !important;
+    margin-bottom: 6px !important;
+    overflow: hidden !important;
+}
+
+.product-image-container img {
+    max-width: 80% !important;
+    max-height: 85px !important;
+    object-fit: contain !important;
+}
+
+.product-name {
+    font-size: 0.72rem !important;
+    line-height: 1.2;
+    margin-bottom: 4px;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.current-price {
+    font-size: 0.9rem !important;
+    font-weight: 700 !important;
+}
+
+.original-price {
+    font-size: 0.7rem !important;
+}
+
+.btn-visit {
+    font-size: 0.6rem !important;
+    padding: 5px 8px !important;
+}
+
+.btn-wishlist,
+.btn-compare {
+    padding: 5px 8px !important;
+    font-size: 0.75rem !important;
+}
+
+.marketplace-badge {
+    font-size: 0.6rem !important;
+    padding: 2px 6px !important;
+}
+
+@media (max-width: 768px) {
+    .product-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 10px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .product-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
