@@ -237,7 +237,7 @@ function renderSearchError(message = 'We could not load prices right now.') { co
 function renderProducts(products) {
     const grid = document.getElementById('productGrid');
     if (products.length === 0) {
-        grid.innerHTML = '<div class="empty-state"><h3>No matching products</h3><p>Try another keyword or remove one of the active filters.</p></div>';
+        grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px; color:#9CA3AF;">No products match current filters</div>';
         return;
     }
     const cheapest = products.filter(p => p.inStock && p.price != null).sort((a, b) => a.price - b.price)[0];
@@ -251,14 +251,14 @@ function renderProducts(products) {
         let metaHTML = '';
         if (product.rating) {
             const ratingFixed = product.rating.toFixed(1);
-            metaHTML = `${ratingFixed}`;
+            metaHTML = `⭐ ${ratingFixed}`;
             if (product.reviewCount) metaHTML += ` (${product.reviewCount} reviews)`;
-            if (product.soldCount) metaHTML += ` • ${product.soldCount} sold`;
+            if (product.soldCount) metaHTML += ` • 🔥 ${product.soldCount} sold`;
         }
 
         return `
             <div class="product-card ${isCheapest ? 'best-choice' : ''}" data-id="${product.id}">
-                ${isCheapest ? '<span class="best-badge">Best Price</span>' : ''}
+                ${isCheapest ? '<span class="best-badge">🏆 Best Price</span>' : ''}
                 <span class="live-badge">LIVE</span>
                 <span class="marketplace-badge ${marketplaceClass}">${product.marketplace} ${product.isOfficial ? '✅ Official' : ''}</span>
                 <div class="product-image-container">
