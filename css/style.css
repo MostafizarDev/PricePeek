@@ -1710,3 +1710,89 @@ body.dark{background:radial-gradient(circle at 50% -10%,rgba(99,102,241,.13),tra
         font-size: .5rem;
     }
 }
+
+
+/* ============ RESULT POLISH FIX — IMAGE CLARITY + DEAL BANNER ============ */
+/* Product images must never inherit multiply blending from the older result styles. */
+.product-image-container img {
+    mix-blend-mode: normal !important;
+    opacity: 1 !important;
+    filter: none !important;
+}
+
+/* Keep product imagery crisp in both themes. */
+.dark .product-image-container img {
+    mix-blend-mode: normal !important;
+    opacity: 1 !important;
+    filter: none !important;
+}
+
+/* Clean, readable Best Deal banner. */
+.best-deal-banner > a {
+    position: relative !important;
+    min-height: 78px;
+    color: #312e81 !important;
+}
+
+.best-deal-banner > a .best-deal-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    flex: 0 0 auto;
+}
+
+.best-deal-banner > a .best-deal-text,
+.best-deal-banner > a .best-deal-title,
+.best-deal-banner > a .best-deal-price,
+.best-deal-banner > a .best-deal-savings {
+    color: #312e81 !important;
+}
+
+.best-deal-banner > a .best-deal-title {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .09em;
+}
+
+.best-deal-banner > a .best-deal-price {
+    font-size: 20px;
+    line-height: 1.25;
+    font-weight: 800;
+}
+
+.best-deal-banner > a .best-deal-savings {
+    font-size: 11px;
+    opacity: .82;
+}
+
+.best-deal-banner > a .best-deal-text > div:last-child {
+    color: #475569 !important;
+}
+
+.dark .best-deal-banner > a,
+.dark .best-deal-banner > a .best-deal-text,
+.dark .best-deal-banner > a .best-deal-title,
+.dark .best-deal-banner > a .best-deal-price,
+.dark .best-deal-banner > a .best-deal-savings {
+    color: #EDE9FE !important;
+}
+
+.dark .best-deal-banner > a .best-deal-text > div:last-child {
+    color: #CBD5E1 !important;
+}
+
+@media (max-width: 520px) {
+    .best-deal-banner > a {
+        min-height: 70px;
+        padding-left: 28px;
+    }
+
+    .best-deal-banner > a .best-deal-icon {
+        left: 4px;
+    }
+
+    .best-deal-banner > a .best-deal-price {
+        font-size: 17px;
+    }
+}
