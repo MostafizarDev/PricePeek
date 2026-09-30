@@ -234,20 +234,39 @@ function renderProductSkeletons(count = 8) {
 function renderSearchError(message = 'We could not load prices right now.') { const grid=document.getElementById('productGrid'); if(!grid)return; grid.innerHTML='<div class="error-state"><h3>Something went wrong</h3><p>'+escapeHTML(message)+'</p><button type="button" onclick="refreshResults()">Try Again</button></div>'; }
 
 // ============ RENDER PRODUCTS (rating with one decimal) ============
+function getBestDealProduct(products) {
+    const inStock = products.filter(p => p.inStock && p.price);
+    if (!inStock.length) return null;
+    const maxReview = Math.max(...inStock.map(p => p.reviewCount || 0));
+    const minPrice = Math.min(...inStock.map(p => p.price));
+    const maxSold = Math.max(...inStock.map(p => p.soldCount || 0));
+    const getScore = (product) => {
+        let score = 0;
+        if (maxReview > 0 && product.reviewCount) score += (product.reviewCount / maxReview) * 50;
+        if (product.price && minPrice > 0) score += (minPrice / product.price) * 30;
+        if (product.discount) score += (product.discount / 100) * 15;
+        if (maxSold > 0 && product.soldCount) score += (product.soldCount / maxSold) * 5;
+        return score;
+    };
+    return inStock.reduce((best, current) => getScore(current) > getScore(best) ? current : best);
+}
+
 function renderProducts(products) {
     const grid = document.getElementById('productGrid');
     if (products.length === 0) {
         grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px; color:#9CA3AF;">No products match current filters</div>';
         return;
     }
-    const cheapest = products.filter(p => p.inStock && p.price != null).sort((a, b) => a.price - b.price)[0];
+    const cheapest = products.filter(p => p.inStock && p.price != null).sort((a,b) => a.price - b.price)[0];
+    const bestDeal = getBestDealProduct(products);
+
     grid.innerHTML = products.map(product => {
         const isCheapest = cheapest && ((product.id && product.id === cheapest.id) || product.url === cheapest.url);
+        const isBestDeal = bestDeal && ((product.id && product.id === bestDeal.id) || product.url === bestDeal.url);
         const isWishlisted = APP_STATE.wishlist.some(w => w.id === product.id);
         const isCompared = APP_STATE.comparisonList.some(c => c.id === product.id);
         const marketplaceClass = getMarketplaceClass(product.marketplace);
 
-        // রেটিং ও রিভিউ তথ্য (এক দশমিক স্থানে)
         let metaHTML = '';
         if (product.rating) {
             const ratingFixed = product.rating.toFixed(1);
@@ -258,11 +277,13 @@ function renderProducts(products) {
 
         return `
             <div class="product-card ${isCheapest ? 'best-choice' : ''}" data-id="${product.id}">
-                ${isCheapest ? '<span class="best-badge">🏆 Best Price</span>' : ''}
-                <span class="live-badge">LIVE</span>
+                <div class="card-corner-badges">
+                    ${isCheapest ? '<span class="corner-badge best-price-badge">🏷 Best Price</span>' : ''}
+                    ${isBestDeal ? '<span class="corner-badge best-deal-badge">★ Best Deal</span>' : ''}
+                </div>
                 <span class="marketplace-badge ${marketplaceClass}">${product.marketplace} ${product.isOfficial ? '✅ Official' : ''}</span>
                 <div class="product-image-container">
-                    ${product.image ? `<img src="${product.image}" alt="${product.name}" onerror="this.parentElement.innerHTML='<span class=\'product-image-placeholder\'>📦</span>'">` : '<span class="product-image-placeholder">📦</span>'}
+                    ${product.image ? `<img src="${product.image}" alt="${escapeHTML(product.name || 'Product')}" onerror="this.parentElement.innerHTML='<span class=\'product-image-placeholder\'>📦</span>'">` : '<span class="product-image-placeholder">📦</span>'}
                 </div>
                 <div class="product-name">${escapeHTML(product.name || 'Unknown Product')}</div>
                 <div class="product-pricing">
@@ -319,66 +340,12 @@ function renderPriceSummary(products) {
 }
 
 function updateBestDeal(products) {
+    // Best Deal is shown as a compact badge on the matching product card.
     const banner = document.getElementById('bestDealBanner');
-    const inStock = products.filter(p => p.inStock && p.price);
-    if (inStock.length === 0) {
+    if (banner) {
+        banner.innerHTML = '';
         banner.style.display = 'none';
-        return;
     }
-
-    // পরিসংখ্যান বের করা (সর্বোচ্চ রিভিউ, সর্বনিম্ন দাম, সর্বোচ্চ সোল্ড)
-    const maxReview = Math.max(...inStock.map(p => p.reviewCount || 0));
-    const minPrice = Math.min(...inStock.map(p => p.price));
-    const maxSold = Math.max(...inStock.map(p => p.soldCount || 0));
-
-    // স্কোরিং ফাংশন
-    const getScore = (product) => {
-        let score = 0;
-
-        // রিভিউ স্কোর (সর্বোচ্চ 50 পয়েন্ট)
-        if (maxReview > 0 && product.reviewCount) {
-            score += (product.reviewCount / maxReview) * 50;
-        }
-
-        // দাম স্কোর (সর্বোচ্চ 30 পয়েন্ট) – দাম কম হলে বেশি স্কোর
-        if (product.price && minPrice > 0) {
-            score += (minPrice / product.price) * 30;
-        }
-
-        // ডিসকাউন্ট স্কোর (সর্বোচ্চ 15 পয়েন্ট)
-        if (product.discount) {
-            score += (product.discount / 100) * 15;
-        }
-
-        // সোল্ড স্কোর (সর্বোচ্চ 5 পয়েন্ট)
-        if (maxSold > 0 && product.soldCount) {
-            score += (product.soldCount / maxSold) * 5;
-        }
-
-        return score;
-    };
-
-    const bestDeal = inStock.reduce((best, current) => {
-        return getScore(current) > getScore(best) ? current : best;
-    });
-
-    const savings = bestDeal.originalPrice ? bestDeal.originalPrice - bestDeal.price : 0;
-    const savingsText = savings > 0 ? `Save ${formatPrice(savings)} (${bestDeal.discount}% off)` : 'Best available price!';
-
-    // ব্যানার কন্টেন্ট (সেন্টার করা)
-    banner.innerHTML = `
-        <a href="${bestDeal.url || '#'}" target="_blank" style="display:flex; align-items:center; justify-content:center; gap:12px; text-decoration:none; color:white; width:100%; text-align:center;">
-            <span class="best-deal-icon">🏆</span>
-            <div class="best-deal-text" style="text-align:center;">
-                <div class="best-deal-title">Best Deal Found!</div>
-                <div class="best-deal-price">${formatPrice(bestDeal.price)} at ${bestDeal.marketplace}</div>
-                <div class="best-deal-savings">${savingsText}</div>
-                ${bestDeal.reviewCount ? `<div style="font-size:0.8rem; opacity:0.9;">⭐ ${bestDeal.rating ? bestDeal.rating.toFixed(1) : ''} (${bestDeal.reviewCount} reviews)${bestDeal.soldCount ? ` • 🔥 ${bestDeal.soldCount} sold` : ''}</div>` : ''}
-            </div>
-        </a>
-    `;
-    banner.style.display = 'flex';
-    banner.style.justifyContent = 'center';
 }
 
 // ============ WISHLIST ============
