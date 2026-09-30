@@ -2009,3 +2009,136 @@ body.dark{background:radial-gradient(circle at 50% -10%,rgba(99,102,241,.13),tra
         font-size: .84rem !important;
     }
 }
+
+
+/* ============ RESULT PAGE PROFESSIONAL POLISH ============ */
+.results-header {
+    display:flex !important;
+    align-items:flex-end !important;
+    justify-content:space-between !important;
+    gap:24px !important;
+    padding:0 0 12px !important;
+    border-bottom:1px solid #e8eaf0 !important;
+}
+
+.results-heading-wrap {
+    min-width:0;
+    gap:2px !important;
+}
+
+.results-eyebrow {
+    font-size:9px !important;
+    letter-spacing:.13em !important;
+}
+
+.results-count {
+    font-size:22px !important;
+    line-height:1.15 !important;
+    margin:0 !important;
+}
+
+.results-query {
+    max-width:620px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    color:#98a2b3;
+    font-size:11px;
+    margin-top:2px;
+}
+
+.results-actions {
+    display:flex;
+    align-items:center;
+    gap:7px;
+    flex:0 0 auto;
+}
+
+.results-freshness {
+    display:inline-flex;
+    align-items:center;
+    height:34px;
+    padding:0 9px;
+    border:1px solid #e4e7ec;
+    border-radius:9px;
+    color:#667085;
+    background:#fff;
+    font-size:10px;
+    font-weight:650;
+    white-space:nowrap;
+}
+
+.results-freshness::before {
+    content:"";
+    width:6px;
+    height:6px;
+    margin-right:6px;
+    border-radius:50%;
+    background:#10b981;
+    box-shadow:0 0 0 3px rgba(16,185,129,.10);
+}
+
+.filter-bar {
+    position:sticky !important;
+    top:74px;
+    z-index:20;
+    margin:0 !important;
+    padding:11px 0 12px !important;
+    background:rgba(247,248,252,.94);
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+    border-bottom:1px solid #eceef2 !important;
+}
+
+.filter-bar .filter-btn {
+    height:32px !important;
+    padding:6px 11px !important;
+}
+
+.product-grid {
+    margin-top:14px !important;
+}
+
+@media (max-width:800px) {
+    .results-header {
+        align-items:flex-start !important;
+        flex-direction:column !important;
+        gap:10px !important;
+    }
+
+    .results-actions {
+        width:100%;
+        overflow-x:auto;
+    }
+
+    .results-freshness {
+        display:none;
+    }
+
+    .filter-bar {
+        top:58px;
+    }
+
+    .results-query {
+        max-width:calc(100vw - 28px);
+    }
+}
+
+.dark .results-header {
+    border-bottom-color:#273449 !important;
+}
+
+.dark .results-query {
+    color:#64748b;
+}
+
+.dark .results-freshness {
+    background:#111827;
+    border-color:#273449;
+    color:#94a3b8;
+}
+
+.dark .filter-bar {
+    background:rgba(8,13,24,.92);
+    border-bottom-color:#273449 !important;
+}
