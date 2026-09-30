@@ -184,6 +184,7 @@ function applyFiltersAndSort() {
     }
     APP_STATE.filteredProducts = products;
     renderProducts(products);
+    renderPriceSummary(products);
     updateBestDeal(products);
     document.getElementById('resultsCount').textContent = `Found ${products.length} offers`;
 }
