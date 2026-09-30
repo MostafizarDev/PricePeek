@@ -2142,3 +2142,55 @@ body.dark{background:radial-gradient(circle at 50% -10%,rgba(99,102,241,.13),tra
     background:rgba(8,13,24,.92);
     border-bottom-color:#273449 !important;
 }
+
+
+/* ============ FOCUSED RESULT VIEW ============ */
+.result-view-active .hero-section,
+.result-view-active .trust-strip,
+.result-view-active .stores-section,
+.result-view-active .how-section,
+.result-view-active .quick-suggestions,
+.result-view-active .live-status {
+    display:none !important;
+}
+
+.result-view-active .results-section.active {
+    margin-top: 12px !important;
+}
+
+.result-view-active .results-header {
+    min-height: 48px !important;
+    padding: 8px 0 !important;
+    align-items:center !important;
+    border-bottom:1px solid #e8eaf0 !important;
+}
+
+.result-view-active .results-count {
+    margin:0 !important;
+    font-size:18px !important;
+    line-height:1.2 !important;
+}
+
+.result-view-active .results-heading-wrap {
+    display:flex !important;
+    align-items:center !important;
+}
+
+.result-view-active .results-actions {
+    align-items:center !important;
+}
+
+@media (max-width: 700px) {
+    .result-view-active .results-header {
+        min-height:44px !important;
+        gap:8px !important;
+    }
+
+    .result-view-active .results-freshness {
+        display:none !important;
+    }
+
+    .result-view-active .results-count {
+        font-size:16px !important;
+    }
+}
