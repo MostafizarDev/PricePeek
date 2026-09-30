@@ -37,7 +37,7 @@ async function performSearch(forceRefresh = false) {
     }
     if (APP_STATE.isSearching) return;
     APP_STATE.isSearching = true;
-
+    APP_STATE.lastSearchQuery = query;
 
     // শুধু কুইক সাজেশন, লাইভ স্ট্যাটাস ও স্টোর স্লাইডার লুকানো
 const quick = document.getElementById('quickSuggestions');
@@ -202,9 +202,14 @@ function applyFiltersAndSort() {
     }
     APP_STATE.filteredProducts = products;
     renderProducts(products);
-    renderPriceSummary(products);
-    updateBestDeal(products);
     document.getElementById('resultsCount').textContent = `Found ${products.length} offers`;
+    const queryEl = document.getElementById('resultsQuery');
+    if (queryEl) {
+        const q = APP_STATE.lastSearchQuery || document.getElementById('mainSearch')?.value?.trim() || '';
+        queryEl.textContent = q ? `Comparing offers for “${q}”` : 'Compare offers from supported Bangladesh stores';
+    }
+    const freshnessEl = document.getElementById('resultsFreshness');
+    if (freshnessEl) freshnessEl.textContent = 'Prices checked live';
 }
 
 function toggleFilter(button, filter) {
