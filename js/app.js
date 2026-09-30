@@ -49,10 +49,10 @@ if (storesSection) storesSection.style.display = 'none';
     document.getElementById('loadingSpinner').classList.add('active');
     document.getElementById('loadingText').textContent = 'Fetching live prices...';
     document.getElementById('productGrid').innerHTML = '';
-    document.getElementById('bestDealBanner').style.display = 'none';
     document.getElementById('resultsSection').classList.add('active');
     document.getElementById('statusText').textContent = 'Searching...';
-    document.querySelector('.status-dot').style.background = '#F59E0B';
+    const statusDot = document.querySelector('.status-dot');
+    if (statusDot) statusDot.style.background = '#F59E0B';
 
     try {
         const { products, errors } = await scraperManager.searchAll(query);
@@ -77,7 +77,8 @@ if (storesSection) storesSection.style.display = 'none';
         APP_STATE.isSearching = false;
         document.getElementById('loadingSpinner').classList.remove('active');
         document.getElementById('statusText').textContent = 'Ready';
-        document.querySelector('.status-dot').style.background = '#10B981';
+        const readyDot = document.querySelector('.status-dot');
+        if (readyDot) readyDot.style.background = '#10B981';
         updateLastUpdated();
     }
 }
