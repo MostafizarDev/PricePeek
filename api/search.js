@@ -125,6 +125,8 @@ module.exports = async (req, res) => {
         const normalizedSource = normalizeProduct({ ...sourceProduct, url: decodedUrl });
         const withoutDuplicate = result.products.filter(p => p.url !== decodedUrl);
         result.products = [normalizedSource, ...withoutDuplicate];
+        result.productGroups = groupProducts(result.products);
+        result.deals = buildDeals(result.productGroups);
       }
 
       return res.json({
