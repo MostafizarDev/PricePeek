@@ -1,3 +1,14 @@
+// ============ SAFE HTML HELPERS ============
+// Keep this helper local to app.js so result rendering never depends on load order.
+function escapeHTML(value = '') {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
 // ============ APPLICATION STATE ============
 const APP_STATE = {
     allProducts: [],
