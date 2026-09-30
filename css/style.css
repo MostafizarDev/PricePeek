@@ -1796,3 +1796,216 @@ body.dark{background:radial-gradient(circle at 50% -10%,rgba(99,102,241,.13),tra
         font-size: 17px;
     }
 }
+
+
+/* ============ COMPACT PREMIUM CARD BADGES + HEIGHT POLISH ============ */
+/* Remove the old LIVE pill that created the empty rounded strip at the card top. */
+.product-card .live-badge {
+    display: none !important;
+}
+
+/* The old large Best Deal banner is replaced by compact card-corner badges. */
+#bestDealBanner {
+    display: none !important;
+}
+
+/* Premium right-corner badges for Best Price / Best Deal. */
+.card-corner-badges {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 8;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+    pointer-events: none;
+}
+
+.corner-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 21px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,.45);
+    box-shadow: 0 4px 10px rgba(15,23,42,.12);
+    backdrop-filter: blur(7px);
+    -webkit-backdrop-filter: blur(7px);
+    font-size: 9px;
+    line-height: 1;
+    font-weight: 800;
+    letter-spacing: .01em;
+    white-space: nowrap;
+}
+
+.best-price-badge {
+    background: rgba(37,99,235,.94);
+    color: #fff;
+    border-color: rgba(37,99,235,.28);
+}
+
+.best-deal-badge {
+    background: rgba(124,58,237,.94);
+    color: #fff;
+    border-color: rgba(124,58,237,.28);
+}
+
+/* Keep the left marketplace label compact and visually separate. */
+.product-card .marketplace-badge {
+    top: 10px !important;
+    left: 10px !important;
+    right: auto !important;
+    z-index: 7;
+}
+
+/* Smaller cards: reduce image, typography and internal spacing without making them cramped. */
+.product-grid {
+    gap: 15px !important;
+}
+
+.product-card {
+    min-height: 0 !important;
+    padding: 11px !important;
+    border-radius: 14px !important;
+}
+
+.product-image-container {
+    height: 158px !important;
+    margin-bottom: 9px !important;
+    padding: 9px !important;
+    border-radius: 10px !important;
+}
+
+.product-image-container img {
+    max-height: 138px !important;
+    max-width: 86% !important;
+}
+
+.product-name {
+    min-height: 38px !important;
+    margin-bottom: 5px !important;
+    font-size: .82rem !important;
+    line-height: 1.35 !important;
+}
+
+.product-pricing {
+    min-height: 26px !important;
+    margin-top: 4px !important;
+    margin-bottom: 2px !important;
+    gap: 5px !important;
+}
+
+.current-price {
+    font-size: 1rem !important;
+}
+
+.original-price {
+    font-size: .68rem !important;
+}
+
+.discount-badge {
+    padding: 3px 5px !important;
+    font-size: .6rem !important;
+}
+
+.product-meta {
+    font-size: .64rem !important;
+    margin-top: 2px !important;
+}
+
+.stock-status {
+    margin: 5px 0 7px !important;
+    padding: 3px 6px !important;
+    font-size: .6rem !important;
+}
+
+.card-actions {
+    grid-template-columns: 1fr 32px 32px !important;
+    gap: 5px !important;
+    margin-top: 8px !important;
+    padding-top: 3px !important;
+}
+
+.btn-visit {
+    min-height: 32px !important;
+    height: 32px !important;
+    font-size: .68rem !important;
+}
+
+.btn-wishlist,
+.btn-compare {
+    width: 32px !important;
+    height: 32px !important;
+}
+
+/* Dark mode badge polish. */
+.dark .best-price-badge {
+    background: rgba(59,130,246,.95);
+    color: #fff;
+}
+
+.dark .best-deal-badge {
+    background: rgba(139,92,246,.95);
+    color: #fff;
+}
+
+@media (max-width: 760px) {
+    .product-image-container {
+        height: 138px !important;
+    }
+
+    .product-image-container img {
+        max-height: 120px !important;
+    }
+
+    .product-name {
+        font-size: .76rem !important;
+        min-height: 34px !important;
+    }
+
+    .current-price {
+        font-size: .92rem !important;
+    }
+
+    .card-corner-badges {
+        top: 8px;
+        right: 8px;
+    }
+
+    .corner-badge {
+        min-height: 19px;
+        padding: 3px 6px;
+        font-size: 8px;
+    }
+}
+
+@media (max-width: 430px) {
+    .product-grid {
+        gap: 8px !important;
+    }
+
+    .product-card {
+        padding: 8px !important;
+        border-radius: 11px !important;
+    }
+
+    .product-image-container {
+        height: 116px !important;
+        margin-bottom: 7px !important;
+    }
+
+    .product-image-container img {
+        max-height: 100px !important;
+    }
+
+    .product-name {
+        font-size: .69rem !important;
+        min-height: 31px !important;
+    }
+
+    .current-price {
+        font-size: .84rem !important;
+    }
+}
