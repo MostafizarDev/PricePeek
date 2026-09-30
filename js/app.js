@@ -9,6 +9,13 @@ function escapeHTML(value = '') {
         .replace(/'/g, '&#039;');
 }
 
+// ============ SAFE FORMATTING HELPERS ============
+function formatBDT(value) {
+    const amount = Number(value);
+    if (!Number.isFinite(amount)) return '৳0';
+    return '৳' + amount.toLocaleString('en-BD', { maximumFractionDigits: 0 });
+}
+
 // ============ APPLICATION STATE ============
 const APP_STATE = {
     allProducts: [],
