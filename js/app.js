@@ -28,6 +28,23 @@ const APP_STATE = {
     lastSearchQuery: '',
 };
 
+// ============ RESULT VIEW MODE ============
+function enterResultView() {
+    document.body.classList.add('result-view-active');
+
+    const hideIds = ['heroSection', 'quickSuggestions', 'liveStatus', 'stores-section', 'howItWorks'];
+    hideIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
+
+    const trustStrip = document.querySelector('.trust-strip');
+    if (trustStrip) trustStrip.style.display = 'none';
+
+    const results = document.getElementById('resultsSection');
+    if (results) results.classList.add('active');
+}
+
 // ============ PERFORM SEARCH (keyword) ============
 async function performSearch(forceRefresh = false) {
     const query = document.getElementById('mainSearch').value.trim();
@@ -49,7 +66,7 @@ if (storesSection) storesSection.style.display = 'none';
     document.getElementById('loadingSpinner').classList.add('active');
     document.getElementById('loadingText').textContent = 'Fetching live prices...';
     document.getElementById('productGrid').innerHTML = '';
-    document.getElementById('resultsSection').classList.add('active');
+    enterResultView();
     document.getElementById('statusText').textContent = 'Searching...';
     const statusDot = document.querySelector('.status-dot');
     if (statusDot) statusDot.style.background = '#F59E0B';
@@ -87,6 +104,8 @@ if (storesSection) storesSection.style.display = 'none';
 async function searchByUrlFromInput(url) {
     if (APP_STATE.isSearching) return;
     APP_STATE.isSearching = true;
+
+    enterResultView();
 
     // হোম সেকশনগুলো লুকানো
     document.getElementById('heroSection').style.display = 'none';
