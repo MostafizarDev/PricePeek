@@ -468,7 +468,7 @@ function handleSmartSearch() {
 }
 
 // ============ HOMEPAGE SOCIAL SHARE ============
-async async function sharePricePeek(platform) {
+async function sharePricePeek(platform) {
     const shareUrl = window.location.origin + '/';
     const shareText = 'Compare prices across Bangladesh with PricePeekBD — Peek Before You Pay.';
     const encodedUrl = encodeURIComponent(shareUrl);
