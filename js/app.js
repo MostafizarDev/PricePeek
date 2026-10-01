@@ -148,6 +148,15 @@ async function searchByUrlFromInput(url) {
     }
 }
 
+function normalizeProductUrl(value) {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+    if (/^https?:\/\//i.test(raw)) return raw;
+    if (/^www\./i.test(raw)) return 'https://' + raw;
+    if (/^[\w.-]+\.[a-z]{2,}(\/|$)/i.test(raw)) return 'https://' + raw;
+    return raw;
+}
+
 // ============ SMART SEARCH (URL vs keyword) ============
 function handleSmartSearch() {
     const value = document.getElementById('mainSearch').value.trim();
@@ -157,7 +166,7 @@ function handleSmartSearch() {
     }
     const isURL = /^https?:\/\//i.test(value) || /^www\./i.test(value) || /\.(com|bd|net|org)(\/|$)/i.test(value);
     if (isURL) {
-        searchByUrlFromInput(value);
+        searchByUrlFromInput(normalizeProductUrl(value));
     } else {
         performSearch();
     }
