@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="How PricePeekBD works — search products, compare available prices, check offers, visit the original store and buy directly.">
+<title>How It Works — PricePeekBD</title>
+<link rel="icon" type="image/svg+xml" href="images/favicon.svg"><link rel="stylesheet" href="css/style.css">
+<style>
+.hiw-main{max-width:1120px;margin:0 auto;padding:46px 24px 76px}
+.hiw-hero{text-align:center;max-width:780px;margin:0 auto 42px}
+.hiw-eyebrow{display:inline-block;margin-bottom:10px;color:var(--primary);font-size:11px;font-weight:800;letter-spacing:.14em}
+.hiw-hero h1{margin:0 0 10px;color:var(--gray-800);font-size:38px;line-height:1.18;font-weight:800}
+.hiw-hero p{margin:0;color:var(--gray-500);font-size:15px;line-height:1.65}
+.hiw-flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:42px}
+.hiw-step{position:relative;background:var(--white);border:1px solid var(--gray-200);border-radius:16px;padding:24px 18px 22px;text-align:center;box-shadow:0 2px 10px rgba(16,24,40,.035)}
+.hiw-step:not(:last-child)::after{content:"→";position:absolute;right:-20px;top:43px;color:var(--primary);font-size:20px;font-weight:700;z-index:2}
+.hiw-step-icon{width:46px;height:46px;margin:0 auto 13px;display:inline-flex;align-items:center;justify-content:center;border-radius:13px;color:var(--primary);background:rgba(79,70,229,.07);border:1px solid rgba(79,70,229,.12)}
+.hiw-step-icon svg{width:22px;height:22px}
+.hiw-step h2{margin:0 0 6px;color:var(--gray-800);font-size:16px;font-weight:700}
+.hiw-step p{margin:0;color:var(--gray-500);font-size:11px;line-height:1.55}
+.hiw-section{margin:0 0 30px}
+.hiw-section-head{text-align:center;max-width:720px;margin:0 auto 20px}
+.hiw-section-head h2{margin:0 0 7px;color:var(--gray-800);font-size:24px;font-weight:800}
+.hiw-section-head p{margin:0;color:var(--gray-500);font-size:12px;line-height:1.6}
+.hiw-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.hiw-detail{background:var(--white);border:1px solid var(--gray-200);border-radius:15px;padding:20px;box-shadow:0 2px 10px rgba(16,24,40,.03)}
+.hiw-detail h3{display:flex;align-items:center;gap:9px;margin:0 0 8px;color:var(--gray-800);font-size:15px;font-weight:700}
+.hiw-detail h3 span{width:27px;height:27px;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;background:rgba(79,70,229,.08);color:var(--primary);font-size:11px;font-weight:800}
+.hiw-detail p{margin:0;color:var(--gray-500);font-size:11.5px;line-height:1.65}
+.hiw-detail ul{margin:10px 0 0;padding-left:18px;color:var(--gray-500);font-size:11.5px;line-height:1.7}
+.hiw-note{margin:30px 0;padding:20px 22px;border:1px solid rgba(79,70,229,.14);border-radius:15px;background:var(--primary-light)}
+.hiw-note h3{margin:0 0 6px;color:var(--gray-800);font-size:15px}
+.hiw-note p{margin:0;color:var(--gray-500);font-size:11.5px;line-height:1.65}
+.hiw-cta{margin-top:38px;padding:30px 24px;text-align:center;background:var(--primary-light);border:1px solid rgba(79,70,229,.13);border-radius:17px}
+.hiw-cta h2{margin:0 0 7px;color:var(--gray-800);font-size:21px}
+.hiw-cta p{margin:0 0 16px;color:var(--gray-500);font-size:12px}
+.hiw-cta a{display:inline-flex;padding:10px 18px;border-radius:9px;background:var(--primary);color:#fff;text-decoration:none;font-size:13px;font-weight:600}
+.hiw-cta a:hover{background:var(--primary-dark)}
+.hiw-footer{margin-top:28px;text-align:center;color:var(--gray-400);font-size:11px}
+body.dark .hiw-hero h1,body.dark .hiw-section-head h2,body.dark .hiw-step h2,body.dark .hiw-detail h3,body.dark .hiw-note h3,body.dark .hiw-cta h2{color:#f1f5f9}
+body.dark .hiw-step,body.dark .hiw-detail{background:#111827;border-color:#273449}
+body.dark .hiw-note,body.dark .hiw-cta{background:#172033;border-color:#273449}
+@media(max-width:820px){.hiw-flow{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.hiw-step:not(:last-child)::after{display:none}.hiw-detail-grid{grid-template-columns:1fr}}
+@media(max-width:560px){.hiw-main{padding:32px 14px 52px}.hiw-hero h1{font-size:29px}.hiw-hero p{font-size:13px}.hiw-flow{grid-template-columns:1fr}.hiw-step{padding:20px 16px}.hiw-section-head h2{font-size:21px}}
+</style></head>
+<body>
+<header class="header"><div class="header-content">
+<a href="index.html" class="logo"><span class="logo-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M20.5 13.5 13.5 20.5 3.5 10.5V3.5h7l10 10Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="7.5" cy="7.5" r="1.2" fill="currentColor"/></svg></span>PricePeekBD</a>
+<nav class="nav-links"><a class="nav-link" href="index.html#heroSection">Search</a><a class="nav-link active" href="how-it-works.html">How It Works</a><a class="nav-link" href="faq.html">FAQ</a><button class="theme-toggle" id="themeToggle" aria-label="Toggle dark/light mode"><span id="themeIcon" aria-hidden="true">◐</span></button></nav>
+</div></header>
+
+<main class="hiw-main">
+<section class="hiw-hero">
+<span class="hiw-eyebrow">HOW IT WORKS</span>
+<h1>Compare before you buy.</h1>
+<p>PricePeekBD helps you search for a product, compare available prices across supported Bangladesh stores, review the offers, and continue your purchase directly with the original store.</p>
+</section>
+
+<section class="hiw-flow" aria-label="PricePeekBD four-step process">
+<article class="hiw-step">
+<div class="hiw-step-icon"><svg viewBox="0 0 24 24" fill="none"><path d="m21 21-4.35-4.35M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+<h2>Search</h2><p>Search by product name, brand, model, or use image search.</p>
+</article>
+<article class="hiw-step">
+<div class="hiw-step-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="m17 16 2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+<h2>Check Price</h2><p>See available matching listings and compare their prices and offer information.</p>
+</article>
+<article class="hiw-step">
+<div class="hiw-step-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M14 5h5v5M19 5l-8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 13v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+<h2>Visit Store</h2><p>Open the original product listing on the marketplace or store website.</p>
+</article>
+<article class="hiw-step">
+<div class="hiw-step-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M6 8h12l1 12H5L6 8Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 8V6a3 3 0 0 1 6 0v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="m9 14 2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+<h2>Buy</h2><p>Complete your purchase directly on the original store's website.</p>
+</article>
+</section>
+
+<section class="hiw-section">
+<div class="hiw-section-head"><h2>Step-by-step</h2><p>Here is what happens from your first search to the final store visit.</p></div>
+<div class="hiw-detail-grid">
+<article class="hiw-detail"><h3><span>01</span>Search a product</h3><p>Start from the main PricePeekBD search box. Enter a product name, brand, model, or useful product details. You can also use the image-search button to upload or paste a product image.</p><ul><li>Product name or category</li><li>Brand and model number</li><li>Useful specifications such as storage, RAM or size</li><li>Product image for image-based search</li></ul></article>
+<article class="hiw-detail"><h3><span>02</span>PricePeek checks supported stores</h3><p>Your search is sent to the available store integrations. PricePeekBD collects matching product listings and normalizes key information such as title, price, original price, discount, stock status and source URL.</p><p style="margin-top:8px">Because store websites can change, results and availability can vary between searches.</p></article>
+<article class="hiw-detail"><h3><span>03</span>Matching the same product</h3><p>PricePeekBD uses product information such as brand, model and important specifications to identify listings that appear to represent the same or compatible product. This helps keep different products and variants from being treated as identical.</p><p style="margin-top:8px">Always check the original listing for the exact variant, size, storage, warranty and other purchase conditions.</p></article>
+<article class="hiw-detail"><h3><span>04</span>Compare the results</h3><p>Results are presented in product cards so you can compare available offers in one place. Depending on the available data, you can use marketplace filters, stock and discount filters, and price or discount sorting.</p><p style="margin-top:8px">Best Price and Best Deal labels are based on the available comparison and offer information shown by PricePeekBD.</p></article>
+<article class="hiw-detail"><h3><span>05</span>Review the store listing</h3><p>When you find an offer you want to inspect, select <strong>Visit Store</strong>. PricePeekBD takes you to the original listing so you can review the seller's current information.</p><ul><li>Confirm the current price</li><li>Check stock and available variants</li><li>Review discount, coupon or cashback conditions</li><li>Check warranty, delivery and seller information where applicable</li></ul></article>
+<article class="hiw-detail"><h3><span>06</span>Buy directly from the store</h3><p>PricePeekBD does not sell or fulfill the products shown in comparison results. After you choose a store, your purchase is completed directly through that store's own checkout and policies.</p></article>
+</div>
+</section>
+
+<section class="hiw-section">
+<div class="hiw-section-head"><h2>Image Search</h2><p>When you do not know the exact product name, start with an image.</p></div>
+<div class="hiw-detail-grid">
+<article class="hiw-detail"><h3><span>IMG</span>Upload or paste an image</h3><p>Use the camera/image button beside the search field, choose a product image, or paste an image with Ctrl + V where supported.</p></article>
+<article class="hiw-detail"><h3><span>TXT</span>Turn the image into a search query</h3><p>PricePeekBD can use readable product text and visual product information to create a cleaner product query. The detected query is placed into the search box so you can edit it before searching.</p></article>
+</div>
+</section>
+
+<div class="hiw-note"><h3>Important: verify before you buy</h3><p>PricePeekBD is a comparison tool, not the seller. Store prices, stock, discounts, coupons, cashback and product details can change. Always confirm the final price, exact product/variant and purchase terms on the original store before placing an order.</p></div>
+
+<section class="hiw-cta"><h2>Ready to compare prices?</h2><p>Search a product and see available prices across supported Bangladesh stores.</p><a href="index.html#heroSection">Start Comparing Prices →</a></section>
+<div class="hiw-footer">© 2026 PricePeekBD. All rights reserved.</div>
+</main>
+
+<script src="js/utils.js"></script><script>
+(function(){const t=document.getElementById('themeToggle'),i=document.getElementById('themeIcon');if(localStorage.getItem('pricepeek_theme')==='dark')document.body.classList.add('dark');function s(){i.textContent=document.body.classList.contains('dark')?'☀':'◐'}s();t.onclick=function(){document.body.classList.toggle('dark');localStorage.setItem('pricepeek_theme',document.body.classList.contains('dark')?'dark':'light');s()}})();
+</script></body></html>
