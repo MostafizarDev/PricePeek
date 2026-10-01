@@ -3249,3 +3249,23 @@ body.dark{background:radial-gradient(circle at 50% -10%,rgba(99,102,241,.13),tra
     object-fit:contain;
 }
 .stores-section .store-card span{display:none !important;}
+
+
+/* Keep store cards compact so slider arrows stay clear of the logos */
+.stores-section .slider-container{
+    position:relative;
+    padding-left:44px;
+    padding-right:44px;
+}
+.stores-section .store-slider{
+    gap:12px;
+}
+.stores-section .store-card{
+    flex:0 0 150px;
+    width:150px;
+    min-width:150px;
+    box-sizing:border-box;
+}
+.stores-section .slider-arrow{
+    z-index:3;
+}
