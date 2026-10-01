@@ -18,10 +18,37 @@ function getMarketplaceClass(marketplace) {
 
 function scrollToSearch() {
     if (typeof setActiveNav === "function") setActiveNav("search");
+
+    // Always return to the homepage/search view, even when the user is
+    // currently on Best Deals, Wishlist, Compare, or a result view.
+    document.body.classList.remove('result-view-active');
+
+    const homeIds = ['heroSection', 'quickSuggestions', 'liveStatus', 'stores-section', 'howItWorks'];
+    homeIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = '';
+    });
+
+    const trustStrip = document.querySelector('.trust-strip');
+    if (trustStrip) trustStrip.style.display = '';
+
+    const results = document.getElementById('resultsSection');
+    if (results) results.classList.remove('active');
+
     const hero = document.getElementById('heroSection');
-    if (hero) hero.scrollIntoView({ behavior: 'smooth' });
-    const searchInput = document.getElementById('mainSearch');
-    if (searchInput) searchInput.focus();
+    if (hero) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setTimeout(() => {
+            const searchInput = document.getElementById('mainSearch');
+            if (searchInput) {
+                searchInput.focus();
+                searchInput.select();
+            }
+        }, 250);
+    } else {
+        const searchInput = document.getElementById('mainSearch');
+        if (searchInput) searchInput.focus();
+    }
 }
 
 function quickSearch(query) {
