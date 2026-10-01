@@ -2409,3 +2409,22 @@ body.dark{background:radial-gradient(circle at 50% -10%,rgba(99,102,241,.13),tra
         width:calc(100% - 20px) !important;
     }
 }
+
+
+/* ============ UNIVERSAL SEARCH: TEXT + IMAGE UPLOAD + IMAGE PASTE ============ */
+.search-container{display:flex;align-items:center}
+.image-search-btn{width:42px;height:42px;flex:0 0 42px;margin:0 4px;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:9px;background:transparent;color:var(--text-secondary,#667085);cursor:pointer;transition:background .18s ease,color .18s ease}
+.image-search-btn:hover{background:var(--surface-hover,#f2f4f7);color:#4f46e5}
+.image-search-btn .btn-icon{width:20px;height:20px}
+.image-search-hint{width:min(760px,calc(100% - 32px));margin:8px auto 0;text-align:center;color:#667085;font-size:10px;line-height:1.5}
+.image-search-selected{display:inline-flex;align-items:center;gap:8px;max-width:100%;padding:5px 8px 5px 5px;border:1px solid #dbe3f0;border-radius:9px;background:#fff;color:#475467;vertical-align:middle}
+.image-search-selected img{width:30px;height:30px;object-fit:cover;border-radius:6px;border:1px solid #e4e7ec}
+.image-search-selected button{width:22px;height:22px;padding:0;border:0;border-radius:50%;background:#f2f4f7;color:#667085;cursor:pointer;font-size:15px;line-height:1}
+.dark .image-search-btn{color:#94a3b8}
+.dark .image-search-btn:hover{background:#1f2937;color:#a78bfa}
+.dark .image-search-hint{color:#94a3b8}
+.dark .image-search-selected{background:#111827;border-color:#273449;color:#cbd5e1}
+.dark .image-search-selected img{border-color:#374151}
+.dark .image-search-selected button{background:#1f2937;color:#cbd5e1}
+.result-view-active .image-search-hint{width:min(760px,calc(100% - 32px))}
+@media(max-width:700px){.image-search-btn{width:36px;height:36px;flex-basis:36px;margin:0 2px}.image-search-hint,.result-view-active .image-search-hint{width:calc(100% - 20px);font-size:9px}.image-search-selected span{max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
