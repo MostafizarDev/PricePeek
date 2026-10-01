@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - PricePeekBD</title>
+    <link rel="icon" type="image/svg+xml" href="images/favicon.svg">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .contact-page{min-height:calc(100vh - 72px);display:flex;align-items:center;justify-content:center;padding:56px 20px 70px}
+        .contact-shell{width:min(760px,100%);text-align:center}
+        .contact-eyebrow{display:inline-flex;padding:6px 10px;border:1px solid rgba(79,70,229,.16);border-radius:999px;color:var(--primary);background:rgba(79,70,229,.06);font-size:10px;font-weight:700;letter-spacing:.08em}
+        .contact-shell h1{margin:14px 0 8px;color:var(--gray-800);font-size:34px;line-height:1.2;font-weight:800}
+        .contact-shell>p{max-width:570px;margin:0 auto;color:var(--gray-500);font-size:13px;line-height:1.7}
+        .contact-grid{margin:30px auto 0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+        .contact-card{display:flex;align-items:center;gap:14px;padding:18px;text-align:left;text-decoration:none;border:1px solid var(--gray-200);border-radius:16px;background:var(--white);box-shadow:0 2px 10px rgba(16,24,40,.035);transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
+        .contact-card:hover{transform:translateY(-2px);border-color:rgba(79,70,229,.24);box-shadow:0 10px 24px rgba(16,24,40,.07)}
+        .contact-icon{width:44px;height:44px;flex:0 0 44px;display:grid;place-items:center;border-radius:12px;background:rgba(79,70,229,.08);color:var(--primary)}
+        .contact-icon svg{width:21px;height:21px;display:block}
+        .contact-card strong{display:block;color:var(--gray-800);font-size:13px;margin-bottom:3px}
+        .contact-card span{display:block;color:var(--gray-500);font-size:10.5px;line-height:1.4;overflow-wrap:anywhere}
+        .contact-note{margin:24px auto 0;max-width:620px;padding:14px 16px;border:1px solid var(--gray-200);border-radius:12px;background:var(--gray-50);color:var(--gray-500);font-size:10.5px;line-height:1.6}
+        .contact-back{display:inline-flex;margin-top:24px;padding:9px 15px;border-radius:9px;background:var(--primary);color:#fff;text-decoration:none;font-size:11px;font-weight:700}
+        .contact-back:hover{opacity:.92}
+        .dark .contact-shell h1{color:#f8fafc}
+        .dark .contact-shell>p,.dark .contact-card span,.dark .contact-note{color:#94a3b8}
+        .dark .contact-card{background:#111827;border-color:#273449;box-shadow:0 2px 10px rgba(0,0,0,.12)}
+        .dark .contact-card:hover{border-color:rgba(129,140,248,.35);box-shadow:0 10px 24px rgba(0,0,0,.22)}
+        .dark .contact-card strong{color:#f1f5f9}
+        .dark .contact-note{background:#172033;border-color:#273449}
+        @media(max-width:560px){.contact-page{padding:42px 14px 56px}.contact-shell h1{font-size:28px}.contact-grid{grid-template-columns:1fr}.contact-card{padding:16px}}
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <a href="index.html" class="logo">
+                <span class="logo-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M20.5 13.5 13.5 20.5 3.5 10.5V3.5h7l10 10Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="7.5" cy="7.5" r="1.2" fill="currentColor"/></svg></span>
+                PricePeekBD
+            </a>
+            <nav class="nav-links">
+                <a class="nav-link" href="index.html#heroSection">Search</a>
+                <a class="nav-link" href="index.html" onclick="sessionStorage.setItem('pricepeekOpenDeals','1')">Best Deals</a>
+                <a class="nav-link" href="index.html">Wishlist</a>
+                <a class="nav-link" href="index.html">Compare</a>
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark/light mode">
+                    <span id="themeIcon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M20.2 15.2A8.5 8.5 0 0 1 8.8 3.8 8.6 8.6 0 1 0 20.2 15.2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="contact-page">
+        <section class="contact-shell">
+            <span class="contact-eyebrow">CONTACT PRICEPEEKBD</span>
+            <h1>Let’s get in touch.</h1>
+            <p>Have a question about PricePeekBD, a store listing, price information, or the project? Contact us directly through any of the channels below.</p>
+
+            <div class="contact-grid">
+                <a class="contact-card" href="mailto:aiautomotionagent@gmail.com?subject=PricePeekBD%20Support&body=Hi%2C%0A%0A">
+                    <span class="contact-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M3 7.5 12 13l9-5.5M4.5 6h15A1.5 1.5 0 0 1 21 7.5v9A1.5 1.5 0 0 1 19.5 18h-15A1.5 1.5 0 0 1 3 16.5v-9A1.5 1.5 0 0 1 4.5 6Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                    <span><strong>Email</strong><span>aiautomotionagent@gmail.com</span></span>
+                </a>
+
+                <a class="contact-card" href="https://t.me/mostafizarfiz" target="_blank" rel="noopener">
+                    <span class="contact-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.4 4.6 18.2 19c-.2 1-0.8 1.2-1.6.8l-4.4-3.3-2.1 2c-.2.2-.4.4-.8.4l.3-4.5 8.2-7.4c.4-.4-.1-.6-.6-.2L7.1 13 2.7 11.6c-1-.3-1-1 .2-1.5L20 3.4c.8-.3 1.6.2 1.4 1.2Z"/></svg></span>
+                    <span><strong>Telegram</strong><span>Message us on Telegram</span></span>
+                </a>
+
+                <a class="contact-card" href="https://wa.me/8801792843568" target="_blank" rel="noopener">
+                    <span class="contact-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.2A9.8 9.8 0 0 0 3.5 17l-1 3.6 3.7-1A9.8 9.8 0 1 0 12 2.2Zm0 17.6a7.8 7.8 0 0 1-4-1.1l-.3-.2-2.2.6.6-2.1-.2-.3a7.8 7.8 0 1 1 6.1 3.1Zm4.3-5.8c-.2-.1-1.4-.7-1.6-.7-.2-.1-.4-.1-.5.1-.2.2-.6.7-.7.8-.1.2-.3.2-.5.1-1.4-.7-2.4-1.3-3.3-2.9-.2-.3.2-.3.5-1 .1-.2.1-.4 0-.6l-.4-1.5c-.1-.4-.3-.4-.5-.4h-.4c-.2 0-.5.1-.7.3-.2.2-.9.9-.9 2.1s.9 2.4 1 2.6c.1.2 1.8 2.8 4.4 3.8 1.7.7 2.3.7 3.1.6.5-.1 1.4-.6 1.6-1.2.2-.6.2-1.1.1-1.2-.1-.1-.3-.2-.5-.3Z"/></svg></span>
+                    <span><strong>WhatsApp</strong><span>Chat with us on WhatsApp</span></span>
+                </a>
+
+                <a class="contact-card" href="https://linktr.ee/mostafizarfiz" target="_blank" rel="noopener">
+                    <span class="contact-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.7"/><path d="M3.5 12h17M12 3.5c2.1 2.3 3.2 5.1 3.2 8.5s-1.1 6.2-3.2 8.5c-2.1-2.3-3.2-5.1-3.2-8.5S9.9 5.8 12 3.5Z" stroke="currentColor" stroke-width="1.7"/></svg></span>
+                    <span><strong>Linktree</strong><span>Find our other online profiles</span></span>
+                </a>
+            </div>
+
+            <div class="contact-note">For product-price questions, please include the product name or the store listing URL in your message when possible. PricePeekBD does not sell products; purchases are completed on the original store website.</div>
+            <a class="contact-back" href="index.html">Back to PricePeekBD</a>
+        </section>
+    </main>
+
+    <script>
+        (function(){
+            const saved = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if(saved === 'dark' || (!saved && prefersDark)) document.body.classList.add('dark');
+            const btn = document.getElementById('themeToggle');
+            if(btn) btn.addEventListener('click', function(){
+                document.body.classList.toggle('dark');
+                localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+            });
+        })();
+    </script>
+</body>
+</html>
