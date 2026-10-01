@@ -3285,3 +3285,34 @@ body.dark{background:radial-gradient(circle at 50% -10%,rgba(99,102,241,.13),tra
     width:205px;
     min-width:205px;
 }
+
+
+/* Best Deals header spacing */
+.results-section .results-header{
+    padding:10px 14px;
+    margin-left:0;
+    margin-right:0;
+    box-sizing:border-box;
+}
+.results-section .results-count{
+    padding-left:2px;
+}
+.results-section .results-actions{
+    padding-right:2px;
+    gap:10px;
+}
+.results-section .results-freshness,
+.results-section .results-actions .filter-btn,
+.results-section .results-actions .sort-select{
+    min-height:36px;
+    box-sizing:border-box;
+}
+.results-section .results-freshness{
+    padding:8px 12px;
+}
+.results-section .results-actions .filter-btn{
+    padding:8px 13px;
+}
+.results-section .results-actions .sort-select{
+    padding:8px 13px;
+}
