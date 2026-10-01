@@ -2563,3 +2563,12 @@ body.dark{background:radial-gradient(circle at 50% -10%,rgba(99,102,241,.13),tra
         width:calc(100% - 20px) !important;
     }
 }
+
+
+/* ============ HOMEPAGE PURCHASE NOTE ============ */
+.live-status .status-dot{
+    display:none !important;
+}
+.live-status{
+    line-height:1.5;
+}
