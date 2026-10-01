@@ -3347,3 +3347,21 @@ body.dark{background:radial-gradient(circle at 50% -10%,rgba(99,102,241,.13),tra
         min-width:0;
     }
 }
+
+
+/* Best Deals page — give the header controls breathing room inside the rounded border */
+.best-deals-page .results-section.active .results-header{
+    padding:10px 14px !important;
+    box-sizing:border-box !important;
+}
+.best-deals-page .results-section.active .results-count{
+    padding-left:0 !important;
+}
+.best-deals-page .results-section.active .results-actions{
+    padding-right:0 !important;
+    gap:10px !important;
+}
+.best-deals-page .results-section.active .results-freshness,
+.best-deals-page .results-section.active .results-actions .sort-select{
+    margin:0 !important;
+}
