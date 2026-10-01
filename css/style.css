@@ -2572,3 +2572,64 @@ body.dark{background:radial-gradient(circle at 50% -10%,rgba(99,102,241,.13),tra
 .live-status{
     line-height:1.5;
 }
+
+
+/* ============ HOMEPAGE PURCHASE NOTE ICON ============ */
+.pricepeek-note{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    width:fit-content;
+    max-width:min(760px, calc(100% - 32px));
+    margin:0 auto;
+    padding:9px 14px;
+    box-sizing:border-box;
+    line-height:1.45;
+    text-align:center;
+}
+
+.pricepeek-note-icon{
+    flex:0 0 17px;
+    width:17px;
+    height:17px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    color:#4f46e5;
+}
+
+.pricepeek-note-icon svg{
+    width:17px;
+    height:17px;
+    display:block;
+}
+
+.pricepeek-note-icon svg circle:first-child{
+    stroke:currentColor;
+    stroke-width:1.8;
+}
+
+.pricepeek-note-icon svg path{
+    stroke:currentColor;
+    stroke-width:1.8;
+    stroke-linecap:round;
+}
+
+.dark .pricepeek-note-icon{
+    color:#a5b4fc;
+}
+
+@media(max-width:700px){
+    .pricepeek-note{
+        max-width:calc(100% - 20px);
+        padding:8px 10px;
+        gap:7px;
+    }
+
+    .pricepeek-note-icon,
+    .pricepeek-note-icon svg{
+        width:16px;
+        height:16px;
+    }
+}
