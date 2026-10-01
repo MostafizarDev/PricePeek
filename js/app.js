@@ -921,17 +921,11 @@ function closeComparisonModal() { document.getElementById('comparisonModal').cla
 async function showDealsPage() {
     setActiveNav('deals');
     document.body.classList.add('best-deals-page');
-    // হোম সেকশন লুকানো (ডিল পেজে যাওয়ার সময়ও)
-    document.getElementById('heroSection').style.display = 'none';
-    document.getElementById('liveStatus').style.display = 'none';
-    const storesSection = document.getElementById('stores-section');
-    if (storesSection) storesSection.style.display = 'none';
 
-    // Keep the Best Deals page focused on deal results only.
-    const trustStrip = document.querySelector('.trust-strip');
-    if (trustStrip) trustStrip.style.display = 'none';
-    const howItWorks = document.getElementById('howItWorks');
-    if (howItWorks) howItWorks.style.display = 'none';
+    // Best Deals uses the same focused result-page shell as a normal search:
+    // compact intro, centered search box, image-search hint, and result header.
+    // Reuse the existing result-view logic instead of maintaining a second layout.
+    enterResultView();
 
     document.getElementById('loadingSpinner').classList.add('active');
     document.getElementById('resultsSection').classList.add('active');
