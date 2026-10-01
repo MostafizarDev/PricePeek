@@ -26,6 +26,7 @@ function getMarketplaceClass(marketplace) {
 }
 
 function scrollToSearch() {
+    if (typeof setActiveNav === "function") setActiveNav("search");
     const hero = document.getElementById('heroSection');
     if (hero) hero.scrollIntoView({ behavior: 'smooth' });
     const searchInput = document.getElementById('mainSearch');
