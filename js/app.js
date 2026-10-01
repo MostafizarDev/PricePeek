@@ -467,6 +467,41 @@ function handleSmartSearch() {
     else performSearch();
 }
 
+// ============ HOMEPAGE SOCIAL SHARE ============
+async function sharePricePeek(platform) {
+    const shareUrl = window.location.href.split('#')[0];
+    const shareText = 'Compare prices across Bangladesh with PricePeekBD — Peek Before You Pay.';
+    const encodedUrl = encodeURIComponent(shareUrl);
+    const encodedText = encodeURIComponent(shareText);
+    const shareLinks = {
+        facebook: 'https://www.facebook.com/sharer/sharer.php?u=' + encodedUrl,
+        x: 'https://twitter.com/intent/tweet?text=' + encodedText + '&url=' + encodedUrl,
+        whatsapp: 'https://wa.me/?text=' + encodeURIComponent(shareText + ' ' + shareUrl),
+        messenger: 'https://www.facebook.com/dialog/send?link=' + encodedUrl,
+        telegram: 'https://t.me/share/url?url=' + encodedUrl + '&text=' + encodedText
+    };
+
+    if (platform === 'copy') {
+        try {
+            await navigator.clipboard.writeText(shareUrl);
+            showNotification('PricePeekBD link copied', 'success');
+        } catch (error) {
+            const fallback = document.createElement('textarea');
+            fallback.value = shareUrl;
+            document.body.appendChild(fallback);
+            fallback.select();
+            document.execCommand('copy');
+            fallback.remove();
+            showNotification('PricePeekBD link copied', 'success');
+        }
+        return;
+    }
+
+    const target = shareLinks[platform];
+    if (!target) return;
+    window.open(target, '_blank', 'noopener,noreferrer,width=700,height=650');
+}
+
 // ============ GLOBAL SEARCH SHORTCUT ============
 document.addEventListener('keydown', event => {
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
