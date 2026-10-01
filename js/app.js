@@ -825,30 +825,48 @@ function renderWishlistDrawer() {
     const body = document.getElementById('wishlistBody');
     if (APP_STATE.wishlist.length === 0) {
         body.innerHTML = '<p style="color:#9CA3AF; text-align:center; padding:40px 0;">No items in wishlist yet.<br>Click the heart icon to add products.</p>';
-    } else {
-        body.innerHTML = APP_STATE.wishlist.map((product, index) => {
-            const productUrl = getSafeProductUrl(product.url);
-            const productName = escapeHTML(product.name || 'Unknown Product');
-            const marketplace = escapeHTML(product.marketplace || 'Store');
-            const price = formatBDT(product.price);
-            const savedDate = product.savedAt ? new Date(product.savedAt).toLocaleDateString() : '';
-            const productLink = productUrl
-                ? `<a href="${escapeHTML(productUrl)}" target="_blank" rel="noopener noreferrer" class="wishlist-product-link" aria-label="Open ${productName} on ${marketplace}">${productName}</a>`
-                : `<span class="wishlist-product-link wishlist-product-link-disabled">${productName}</span>`;
+        return;
+    }
 
-            return `
-            <div class="wishlist-item">
-                <div class="wishlist-item-icon">📦</div>
-                <div class="wishlist-item-info">
-                    ${productLink}
-                    <div class="wishlist-item-meta">${marketplace} • ${price}</div>
-                    ${savedDate ? `<div class="wishlist-item-date">Saved: ${savedDate}</div>` : ''}
-                    ${productUrl ? `<a href="${escapeHTML(productUrl)}" target="_blank" rel="noopener noreferrer" class="wishlist-open-link">View Product ↗</a>` : '<span class="wishlist-open-link wishlist-open-link-disabled">Product link unavailable</span>'}
-                </div>
+    body.innerHTML = APP_STATE.wishlist.map((product, index) => {
+        const productUrl = getSafeProductUrl(product.url);
+        const productName = escapeHTML(product.name || 'Unknown Product');
+        const marketplace = escapeHTML(product.marketplace || 'Store');
+        const price = formatBDT(product.price);
+        const savedDate = product.savedAt ? new Date(product.savedAt).toLocaleDateString() : '';
+        const imageUrl = String(product.image || '').trim();
+        const safeImageUrl = imageUrl ? escapeHTML(imageUrl) : '';
+        const imageHTML = safeImageUrl
+            ? `<img src="${safeImageUrl}" alt="${productName}" class="wishlist-product-image" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><span class="wishlist-product-placeholder" style="display:none;">📦</span>`
+            : '<span class="wishlist-product-placeholder">📦</span>';
+
+        const clickableClass = productUrl ? ' wishlist-clickable' : '';
+        const productContent = productUrl
+            ? `<a href="${escapeHTML(productUrl)}" target="_blank" rel="noopener noreferrer" class="wishlist-product-main" aria-label="Open ${productName} on ${marketplace}">
+                    <div class="wishlist-product-image-wrap">${imageHTML}</div>
+                    <div class="wishlist-product-info">
+                        <div class="wishlist-product-link">${productName}</div>
+                        <div class="wishlist-item-meta">${marketplace} • ${price}</div>
+                        ${savedDate ? `<div class="wishlist-item-date">Saved: ${savedDate}</div>` : ''}
+                        <span class="wishlist-open-link">Open Original Store ↗</span>
+                    </div>
+                </a>`
+            : `<div class="wishlist-product-main">
+                    <div class="wishlist-product-image-wrap">${imageHTML}</div>
+                    <div class="wishlist-product-info">
+                        <div class="wishlist-product-link wishlist-product-link-disabled">${productName}</div>
+                        <div class="wishlist-item-meta">${marketplace} • ${price}</div>
+                        ${savedDate ? `<div class="wishlist-item-date">Saved: ${savedDate}</div>` : ''}
+                        <span class="wishlist-open-link wishlist-open-link-disabled">Product link unavailable</span>
+                    </div>
+                </div>`;
+
+        return `
+            <div class="wishlist-item${clickableClass}">
+                ${productContent}
                 <button onclick="removeFromWishlist(${index})" class="wishlist-remove-btn" aria-label="Remove from wishlist" title="Remove from wishlist">🗑️</button>
             </div>`;
-        }).join('');
-    }
+    }).join('');
 }
 function removeFromWishlist(index) {
     APP_STATE.wishlist.splice(index, 1);
