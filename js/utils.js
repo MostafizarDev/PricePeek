@@ -2,18 +2,9 @@
 
 let notificationTimer;
 
-function showNotification(message, type = 'info') {
-    const notification = document.getElementById('notification');
-    if (!notification) return;
-    const labels = { success: 'Done', error: 'Error', info: 'Notice' };
-    notification.setAttribute('role', 'status');
-    notification.setAttribute('aria-live', 'polite');
-    notification.textContent = `${labels[type] || labels.info}: ${message}`;
-    notification.className = `notification ${type} show`;
-    clearTimeout(notificationTimer);
-    notificationTimer = setTimeout(() => {
-        notification.classList.remove('show');
-    }, 3200);
+function showNotification() {
+    // Notifications/pop-up toasts are intentionally disabled across the site.
+    return;
 }
 
 function formatPrice(price) {
