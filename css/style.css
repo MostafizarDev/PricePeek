@@ -2312,3 +2312,100 @@ body.dark{background:radial-gradient(circle at 50% -10%,rgba(99,102,241,.13),tra
         line-height:44px !important;
     }
 }
+
+
+/* ============ RESULT PAGE SEARCH / HEADER FINAL ============ */
+.result-search-intro {
+    display:none;
+}
+
+.result-view-active .result-search-intro {
+    display:block;
+    width:min(760px, calc(100% - 32px));
+    margin:2px auto 12px;
+    text-align:center;
+}
+
+.result-view-active .result-search-intro .result-search-kicker {
+    margin-bottom:5px;
+    color:#4f46e5;
+    font-size:9px;
+    font-weight:800;
+    letter-spacing:.14em;
+}
+
+.result-view-active .result-search-intro h2 {
+    margin:0;
+    color:#101828;
+    font-size:20px;
+    line-height:1.25;
+    font-weight:800;
+}
+
+.result-view-active .result-search-intro p {
+    max-width:650px;
+    margin:5px auto 0;
+    color:#667085;
+    font-size:11px;
+    line-height:1.5;
+}
+
+.result-view-active .hero-section .search-wrapper {
+    width:min(760px, calc(100% - 32px)) !important;
+    max-width:none !important;
+    margin:0 auto !important;
+}
+
+.result-view-active .hero-section .search-container {
+    width:100% !important;
+    box-sizing:border-box !important;
+}
+
+.result-view-active .hero-section .search-input {
+    line-height:normal !important;
+}
+
+.result-view-active .hero-section .search-btn {
+    height:42px !important;
+    margin-right:0 !important;
+}
+
+.result-view-active .results-header {
+    padding-left:12px !important;
+    padding-right:12px !important;
+}
+
+.result-view-active .results-count {
+    padding-left:2px !important;
+}
+
+.result-view-active .results-actions {
+    padding-right:2px !important;
+}
+
+.dark .result-view-active .result-search-intro h2 {
+    color:#F8FAFC;
+}
+
+.dark .result-view-active .result-search-intro p {
+    color:#94A3B8;
+}
+
+@media (max-width:700px) {
+    .result-view-active .result-search-intro {
+        width:calc(100% - 20px);
+        margin-bottom:9px;
+    }
+
+    .result-view-active .result-search-intro h2 {
+        font-size:17px;
+    }
+
+    .result-view-active .result-search-intro p {
+        font-size:10px;
+    }
+
+    .result-view-active .hero-section .search-wrapper {
+        width:calc(100% - 20px) !important;
+    }
+}
