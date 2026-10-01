@@ -1,3 +1,13 @@
+
+// ============ HEADER ACTIVE TAB ============
+function setActiveNav(tab) {
+    document.querySelectorAll('.nav-links .nav-link').forEach(link => link.classList.remove('active'));
+    const map = { search: 0, deals: 1, wishlist: 2, compare: 3 };
+    const index = map[tab];
+    const links = document.querySelectorAll('.nav-links .nav-link');
+    if (index !== undefined && links[index]) links[index].classList.add('active');
+}
+
 // ============ SAFE HTML HELPERS ============
 // Keep this helper local to app.js so result rendering never depends on load order.
 function escapeHTML(value = '') {
@@ -47,6 +57,7 @@ function enterResultView() {
 
 // ============ PERFORM SEARCH (keyword) ============
 async function performSearch(forceRefresh = false) {
+    setActiveNav('search');
     const query = document.getElementById('mainSearch').value.trim();
     if (!query) {
         showNotification('Please enter a product name or URL', 'error');
@@ -108,6 +119,7 @@ if (storesSection) storesSection.style.display = 'none';
 
 // ============ SEARCH BY URL ============
 async function searchByUrlFromInput(url) {
+    setActiveNav('search');
     if (APP_STATE.isSearching) return;
     APP_STATE.isSearching = true;
 
@@ -353,6 +365,7 @@ async function imageToSearchQuery(file) {
 }
 
 async function searchByImage() {
+    setActiveNav('search');
     if (!IMAGE_SEARCH_STATE.file || IMAGE_SEARCH_STATE.isProcessing || APP_STATE.isSearching) return;
 
     IMAGE_SEARCH_STATE.isProcessing = true;
@@ -715,6 +728,7 @@ function toggleWishlist(productId) {
 }
 function updateWishlistCount() { document.getElementById('wishlist-count').textContent = APP_STATE.wishlist.length; }
 function toggleWishlistDrawer() {
+    setActiveNav('wishlist');
     const drawer = document.getElementById('wishlistDrawer');
     drawer.classList.toggle('active');
     renderWishlistDrawer();
@@ -793,6 +807,7 @@ function clearComparison() {
     showNotification('Comparison cleared', 'info');
 }
 function showComparison() {
+    setActiveNav('compare');
     updateComparisonUI();
     document.getElementById('comparisonPanel').classList.add('active');
 }
@@ -828,6 +843,7 @@ function closeComparisonModal() { document.getElementById('comparisonModal').cla
 
 // ============ DEALS PAGE ============
 async function showDealsPage() {
+    setActiveNav('deals');
     // হোম সেকশন লুকানো (ডিল পেজে যাওয়ার সময়ও)
     document.getElementById('heroSection').style.display = 'none';
     document.getElementById('liveStatus').style.display = 'none';
