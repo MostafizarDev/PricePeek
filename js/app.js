@@ -945,6 +945,10 @@ async function showDealsPage() {
     APP_STATE.allProducts = unique.slice(0, 50);
     APP_STATE.currentFilter = 'all';
     APP_STATE.currentSort = 'discount_desc';
+
+    // Best Deals has its own page heading instead of the generic search-result count.
+    const resultsCount = document.getElementById('resultsCount');
+    if (resultsCount) resultsCount.textContent = 'Best Deals';
     document.getElementById('sortSelect').value = 'discount_desc';
     applyFiltersAndSort();
     document.getElementById('loadingSpinner').classList.remove('active');
