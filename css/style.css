@@ -3277,3 +3277,11 @@ body.dark{background:radial-gradient(circle at 50% -10%,rgba(99,102,241,.13),tra
     width:175px;
     min-width:175px;
 }
+
+
+/* Enlarge supported store cards */
+.stores-section .store-card{
+    flex-basis:205px;
+    width:205px;
+    min-width:205px;
+}
