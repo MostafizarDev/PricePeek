@@ -3047,3 +3047,47 @@ body.dark{background:radial-gradient(circle at 50% -10%,rgba(99,102,241,.13),tra
         flex-basis:15px;
     }
 }
+
+
+/* ============ FOOTER SHARE CONTROLS — FINAL POLISH ============ */
+.footer-social{
+    align-items:center;
+    justify-content:flex-start;
+    gap:8px;
+    margin-top:0;
+}
+.footer-social-btn.footer-share-primary{
+    width:auto;
+    min-width:78px;
+    padding:0 10px !important;
+    gap:6px;
+}
+.footer-social-btn.footer-share-primary span{
+    display:inline-block;
+    font-size:9px;
+    font-weight:800;
+    letter-spacing:.06em;
+    line-height:1;
+}
+.footer-social-btn.footer-share-primary svg{
+    width:15px !important;
+    height:15px !important;
+    min-width:15px !important;
+    min-height:15px !important;
+    max-width:15px !important;
+    max-height:15px !important;
+}
+.footer-social-btn[data-share="whatsapp"] svg{
+    width:17px !important;
+    height:17px !important;
+    min-width:17px !important;
+    min-height:17px !important;
+    max-width:17px !important;
+    max-height:17px !important;
+}
+@media(max-width:520px){
+    .footer-social-btn.footer-share-primary{
+        min-width:74px;
+        padding:0 9px !important;
+    }
+}
