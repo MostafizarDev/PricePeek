@@ -909,6 +909,22 @@ function updateComparisonUI() {
     const panel = document.getElementById('comparisonPanel');
     const itemsContainer = document.getElementById('comparisonItems');
 
+    const panelActions = panel ? panel.querySelector('.comparison-panel > div:first-child > div') : null;
+    if (panelActions && !panelActions.querySelector('.comparison-hide-btn')) {
+        const hideButton = document.createElement('button');
+        hideButton.type = 'button';
+        hideButton.className = 'filter-btn comparison-hide-btn';
+        hideButton.textContent = '− Hide';
+        hideButton.title = 'Hide compare bar';
+        hideButton.setAttribute('aria-label', 'Hide compare bar');
+        hideButton.onclick = toggleComparisonBar;
+        panelActions.insertBefore(hideButton, panelActions.firstChild);
+
+        const style = document.createElement('style');
+        style.textContent = '.comparison-panel-actions{display:flex;align-items:center;gap:8px}.comparison-hide-btn{display:inline-flex;align-items:center;justify-content:center}.comparison-panel.is-collapsed{display:none!important}@media(max-width:640px){.comparison-panel-actions{gap:6px;flex-wrap:wrap;justify-content:flex-end}}';
+        document.head.appendChild(style);
+    }
+
     if (countEl) countEl.textContent = count;
     if (panelCountEl) panelCountEl.textContent = count;
     if (compareBtn) compareBtn.disabled = count < 2;
