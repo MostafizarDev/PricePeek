@@ -521,6 +521,13 @@ async function sharePricePeek(platform) {
     window.open(target, '_blank', 'noopener,noreferrer,width=700,height=650');
 }
 
+// ============ FOOTER SOCIAL SHARE ============
+document.addEventListener('click', event => {
+    const button = event.target.closest('.footer-social-btn[data-share]');
+    if (!button) return;
+    sharePricePeek(button.dataset.share);
+});
+
 // ============ GLOBAL SEARCH SHORTCUT ============
 document.addEventListener('keydown', event => {
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
