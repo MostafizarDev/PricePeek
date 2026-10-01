@@ -2960,10 +2960,46 @@ body.dark{background:radial-gradient(circle at 50% -10%,rgba(99,102,241,.13),tra
 }
 
 
-.footer-social{display:flex;align-items:center;gap:8px;margin-top:14px;flex-wrap:wrap}
-.footer-social-btn{width:32px;height:32px;padding:0;border:1px solid var(--border-color);border-radius:9px;background:var(--surface);color:var(--text-secondary);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:all .18s ease}
-.footer-social-btn svg{width:16px;height:16px;display:block}
-.footer-social-btn:hover{color:var(--primary);border-color:rgba(79,70,229,.3);transform:translateY(-2px);box-shadow:0 5px 12px rgba(16,24,40,.08)}
-.dark .footer-social-btn{background:#111827;border-color:#273449;color:#94a3b8}
-.dark .footer-social-btn:hover{color:#a5b4fc;border-color:rgba(129,140,248,.35)}
-@media(max-width:520px){.footer-social{gap:7px}.footer-social-btn{width:31px;height:31px}}
+.footer-social{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-top:14px;
+    flex-wrap:wrap;
+}
+.footer-social-btn{
+    width:34px;
+    height:34px;
+    padding:0;
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:9px;
+    background:rgba(255,255,255,.06);
+    color:#cbd5e1;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+    transition:transform .18s ease,background .18s ease,border-color .18s ease,box-shadow .18s ease;
+}
+.footer-social-btn svg{width:17px;height:17px;display:block}
+.footer-social-btn[data-share="facebook"]{background:#1877f2;color:#fff;border-color:#1877f2}
+.footer-social-btn[data-share="x"]{background:#111827;color:#fff;border-color:#475569}
+.footer-social-btn[data-share="whatsapp"]{background:#16a34a;color:#fff;border-color:#16a34a}
+.footer-social-btn[data-share="messenger"]{background:#6366f1;color:#fff;border-color:#6366f1}
+.footer-social-btn[data-share="telegram"]{background:#229ed9;color:#fff;border-color:#229ed9}
+.footer-social-btn[data-share="copy"]{background:#334155;color:#e2e8f0;border-color:#475569}
+.footer-social-btn:hover{
+    transform:translateY(-2px);
+    filter:brightness(1.08);
+    box-shadow:0 7px 16px rgba(0,0,0,.22);
+}
+.footer-social-btn:focus-visible{
+    outline:2px solid #93c5fd;
+    outline-offset:2px;
+}
+.dark .footer-social-btn{border-color:rgba(255,255,255,.12)}
+@media(max-width:520px){
+    .footer-social{gap:7px}
+    .footer-social-btn{width:32px;height:32px}
+}
