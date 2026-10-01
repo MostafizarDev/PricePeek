@@ -2,6 +2,17 @@ const DarazScraper = require('../lib/daraz');
 const StarTechScraper = require('../lib/startech');
 const RyansScraper = require('../lib/ryans');
 const RokomariScraper = require('../lib/rokomari');
+const PickabooScraper = require('../lib/pickaboo');
+const GadgetGearScraper = require('../lib/gadgetgear');
+const TechLandScraper = require('../lib/techland');
+const OthobaScraper = require('../lib/othoba');
+const AjkerDealScraper = require('../lib/ajkerdeal');
+const BagdoomScraper = require('../lib/bagdoom');
+const SumashTechScraper = require('../lib/sumashtech');
+const DazzleScraper = require('../lib/dazzle');
+const AppleGadgetsScraper = require('../lib/applegadgets');
+const ShajgojScraper = require('../lib/shajgoj');
+const ChaldalScraper = require('../lib/chaldal');
 const productMatcher = require('../lib/matcher');
 const { normalizeProduct } = require('../lib/normalize');
 const { getStoreStatus } = require('../lib/storeRegistry');
@@ -14,6 +25,17 @@ const scrapers = [
   new StarTechScraper(),
   new RyansScraper(),
   new RokomariScraper(),
+  new PickabooScraper(),
+  new GadgetGearScraper(),
+  new TechLandScraper(),
+  new OthobaScraper(),
+  new AjkerDealScraper(),
+  new BagdoomScraper(),
+  new SumashTechScraper(),
+  new DazzleScraper(),
+  new AppleGadgetsScraper(),
+  new ShajgojScraper(),
+  new ChaldalScraper(),
 ];
 
 const cache = new Map();
