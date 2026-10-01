@@ -879,85 +879,149 @@ function removeFromWishlist(index) {
 
 // ============ COMPARISON ============
 function toggleCompare(productId) {
-    const product = APP_STATE.allProducts.find(p => p.id == productId);
-    if (!product) return;
-    const index = APP_STATE.comparisonList.findIndex(c => c.id == productId);
+    const key = String(productId);
+    const currentProduct = APP_STATE.allProducts.find(p => String(p.id) === key);
+    const index = APP_STATE.comparisonList.findIndex(p => String(p.id) === key);
+
     if (index > -1) {
         APP_STATE.comparisonList.splice(index, 1);
-        showNotification('Removed from comparison', 'info');
     } else {
-        if (APP_STATE.comparisonList.length >= 5) {
-            showNotification('Maximum 5 products can be compared', 'error');
-            return;
-        }
-        APP_STATE.comparisonList.push(product);
-        showNotification('Added to comparison', 'success');
+        if (!currentProduct) return;
+        if (APP_STATE.comparisonList.length >= 5) return;
+        APP_STATE.comparisonList.push({
+            ...currentProduct,
+            url: getSafeProductUrl(currentProduct.url),
+            image: String(currentProduct.image || '').trim()
+        });
     }
+
     localStorage.setItem('comparison', JSON.stringify(APP_STATE.comparisonList));
     updateComparisonUI();
     renderProducts(APP_STATE.filteredProducts);
 }
+
 function updateComparisonUI() {
     const count = APP_STATE.comparisonList.length;
-    document.getElementById('compare-count').textContent = count;
-    document.getElementById('compareCountPanel').textContent = count;
-    document.getElementById('compareBtn').disabled = count < 2;
+    const countEl = document.getElementById('compare-count');
+    const panelCountEl = document.getElementById('compareCountPanel');
+    const compareBtn = document.getElementById('compareBtn');
     const panel = document.getElementById('comparisonPanel');
     const itemsContainer = document.getElementById('comparisonItems');
+
+    if (countEl) countEl.textContent = count;
+    if (panelCountEl) panelCountEl.textContent = count;
+    if (compareBtn) compareBtn.disabled = count < 2;
+
+    if (!panel || !itemsContainer) return;
+
     if (count > 0) {
         panel.classList.add('active');
-        itemsContainer.innerHTML = APP_STATE.comparisonList.map(p => `
-            <div class="comparison-item">
-                <span class="remove-compare" onclick="toggleCompare('${p.id}')">✕</span>
-                <div style="text-align:center; font-size:30px;">📦</div>
-                <div style="font-size:12px; font-weight:600;">${p.marketplace}</div>
-                <div style="font-weight:700;">${formatPrice(p.price)}</div>
-            </div>`).join('');
+        itemsContainer.innerHTML = APP_STATE.comparisonList.map(p => {
+            const productName = escapeHTML(p.name || 'Product');
+            const marketplace = escapeHTML(p.marketplace || 'Store');
+            const image = String(p.image || '').trim();
+            const imageHTML = image
+                ? `<img src="${escapeHTML(image)}" alt="${productName}" class="comparison-item-image" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><span class="comparison-item-placeholder" style="display:none;">📦</span>`
+                : '<span class="comparison-item-placeholder">📦</span>';
+
+            return `
+                <div class="comparison-item">
+                    <button type="button" class="remove-compare" onclick="toggleCompare('${escapeHTML(p.id)}')" aria-label="Remove from comparison">×</button>
+                    <div class="comparison-item-image-wrap">${imageHTML}</div>
+                    <div class="comparison-item-name">${productName}</div>
+                    <div class="comparison-item-store">${marketplace}</div>
+                    <div class="comparison-item-price">${formatBDT(p.price)}</div>
+                </div>`;
+        }).join('');
     } else {
         panel.classList.remove('active');
+        itemsContainer.innerHTML = '';
     }
 }
+
 function clearComparison() {
     APP_STATE.comparisonList = [];
     localStorage.setItem('comparison', JSON.stringify([]));
     updateComparisonUI();
     renderProducts(APP_STATE.filteredProducts);
-    showNotification('Comparison cleared', 'info');
 }
+
 function showComparison() {
     setActiveNav('compare');
     updateComparisonUI();
-    document.getElementById('comparisonPanel').classList.add('active');
+
+    if (APP_STATE.comparisonList.length >= 2) {
+        compareProducts();
+        return;
+    }
+
+    const panel = document.getElementById('comparisonPanel');
+    if (panel) panel.classList.add('active');
 }
+
 function compareProducts() {
     if (APP_STATE.comparisonList.length < 2) return;
+
     const modal = document.getElementById('comparisonModal');
     const body = document.getElementById('comparisonModalBody');
+    if (!modal || !body) return;
+
+    const products = APP_STATE.comparisonList;
+    const productHeaders = products.map(p => {
+        const name = escapeHTML(p.name || 'Product');
+        const marketplace = escapeHTML(p.marketplace || 'Store');
+        const image = String(p.image || '').trim();
+        const url = getSafeProductUrl(p.url);
+
+        const imageHTML = image
+            ? `<img src="${escapeHTML(image)}" alt="${name}" class="comparison-table-image" loading="lazy">`
+            : '<div class="comparison-table-placeholder">📦</div>';
+
+        const storeLink = url
+            ? `<a href="${escapeHTML(url)}" target="_blank" rel="noopener noreferrer" class="comparison-store-link">Open Store ↗</a>`
+            : '<span class="comparison-store-link disabled">Link unavailable</span>';
+
+        return `
+            <th class="comparison-product-header">
+                ${imageHTML}
+                <div class="comparison-product-store">${marketplace}</div>
+                <div class="comparison-product-name">${name}</div>
+                ${storeLink}
+            </th>`;
+    }).join('');
+
     body.innerHTML = `
-        <div style="overflow-x:auto;">
-            <table style="width:100%; border-collapse:collapse;">
-                <thead><tr>
-                    <th style="padding:12px; border-bottom:2px solid #E5E7EB; text-align:left;">Feature</th>
-                    ${APP_STATE.comparisonList.map(p => `<th style="padding:12px; text-align:center;"><div style="font-weight:600;">${p.marketplace}</div><div style="font-size:11px; color:#6B7280;">${p.name?.substring(0,30)}...</div></th>`).join('')}
-                </tr></thead>
+        <div class="comparison-table-wrap">
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th class="comparison-feature-head">Product Details</th>
+                        ${productHeaders}
+                    </tr>
+                </thead>
                 <tbody>
-                    ${createComparisonRow('Price', p => formatPrice(p.price))}
-                    ${createComparisonRow('Original Price', p => p.originalPrice ? formatPrice(p.originalPrice) : 'N/A')}
-                    ${createComparisonRow('Discount', p => p.discount > 0 ? `-${p.discount}%` : 'None')}
-                    ${createComparisonRow('Status', p => p.inStock ? '🟢 In Stock' : '🔴 Out of Stock')}
-                    ${createComparisonRow('Official Store', p => p.isOfficial ? '✅ Yes' : '❌ No')}
-                    ${createComparisonRow('Rating', p => p.rating ? `⭐ ${p.rating.toFixed(1)} (${p.reviewCount || 0} reviews)` : 'N/A')}
-                    ${createComparisonRow('Coupons', p => p.coupons?.map(c => c.code).join(', ') || 'None')}
-                    ${createComparisonRow('Cashback', p => p.cashback?.map(c => `${c.provider} ${c.percentage}%`).join(', ') || 'None')}
+                    ${createComparisonRow('Price', p => formatBDT(p.price))}
+                    ${createComparisonRow('Original Price', p => p.originalPrice ? formatBDT(p.originalPrice) : 'N/A')}
+                    ${createComparisonRow('Discount', p => p.discount > 0 ? `-${escapeHTML(p.discount)}%` : 'None')}
+                    ${createComparisonRow('Availability', p => p.inStock ? '🟢 In Stock' : '🔴 Out of Stock')}
+                    ${createComparisonRow('Official Store', p => p.isOfficial ? 'Yes' : 'No')}
+                    ${createComparisonRow('Rating', p => p.rating ? `⭐ ${Number(p.rating).toFixed(1)}${p.reviewCount ? ` (${p.reviewCount} reviews)` : ''}` : 'N/A')}
+                    ${createComparisonRow('Coupons', p => Array.isArray(p.coupons) && p.coupons.length ? p.coupons.map(c => escapeHTML(c.code || c.title || '')).filter(Boolean).join(', ') : 'None')}
+                    ${createComparisonRow('Cashback', p => Array.isArray(p.cashback) && p.cashback.length ? p.cashback.map(c => `${escapeHTML(c.provider || '')} ${escapeHTML(c.percentage || '')}%`).join(', ') : 'None')}
                 </tbody>
             </table>
         </div>`;
     modal.classList.add('active');
 }
+
 function createComparisonRow(label, valueFn) {
-    return `<tr><td style="padding:10px; border-bottom:1px solid #F3F4F6; font-weight:600;">${label}</td>${APP_STATE.comparisonList.map(p => `<td style="padding:10px; text-align:center;">${valueFn(p)}</td>`).join('')}</tr>`;
+    return `<tr><th class="comparison-feature-cell">${escapeHTML(label)}</th>${APP_STATE.comparisonList.map(p => `<td class="comparison-value-cell">${valueFn(p)}</td>`).join('')}</tr>`;
 }
-function closeComparisonModal() { document.getElementById('comparisonModal').classList.remove('active'); }
+
+function closeComparisonModal() {
+    const modal = document.getElementById('comparisonModal');
+    if (modal) modal.classList.remove('active');
+}
 
 // ============ DEALS PAGE ============
 async function showDealsPage() {
