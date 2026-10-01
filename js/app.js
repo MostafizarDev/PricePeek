@@ -32,6 +32,7 @@ const APP_STATE = {
     filteredProducts: [],
     wishlist: JSON.parse(localStorage.getItem('wishlist') || '[]'),
     comparisonList: JSON.parse(localStorage.getItem('comparison') || '[]'),
+    comparisonBarHidden: localStorage.getItem('comparisonBarHidden') === '1',
     currentFilter: 'all',
     currentSort: 'price_asc',
     isSearching: false,
@@ -914,6 +915,8 @@ function updateComparisonUI() {
 
     if (!panel || !itemsContainer) return;
 
+    panel.classList.toggle('is-collapsed', APP_STATE.comparisonBarHidden && count > 0);
+
     if (count > 0) {
         panel.classList.add('active');
         itemsContainer.innerHTML = APP_STATE.comparisonList.map(p => {
@@ -946,8 +949,17 @@ function clearComparison() {
     renderProducts(APP_STATE.filteredProducts);
 }
 
+function toggleComparisonBar() {
+    if (APP_STATE.comparisonList.length === 0) return;
+    APP_STATE.comparisonBarHidden = !APP_STATE.comparisonBarHidden;
+    localStorage.setItem('comparisonBarHidden', APP_STATE.comparisonBarHidden ? '1' : '0');
+    updateComparisonUI();
+}
+
 function showComparison() {
     setActiveNav('compare');
+    APP_STATE.comparisonBarHidden = false;
+    localStorage.setItem('comparisonBarHidden', '0');
     updateComparisonUI();
 
     if (APP_STATE.comparisonList.length >= 2) {
