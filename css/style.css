@@ -3316,3 +3316,34 @@ body.dark{background:radial-gradient(circle at 50% -10%,rgba(99,102,241,.13),tra
 .results-section .results-actions .sort-select{
     padding:8px 13px;
 }
+
+
+/* Final Best Deals header edge spacing */
+.result-view-active .results-section.active .results-header{
+    padding:10px 18px !important;
+    min-height:48px !important;
+    box-sizing:border-box !important;
+}
+.result-view-active .results-section.active .results-count{
+    padding-left:0 !important;
+}
+.result-view-active .results-section.active .results-actions{
+    padding-right:0 !important;
+    gap:10px !important;
+}
+.result-view-active .results-section.active .results-actions .filter-btn,
+.result-view-active .results-section.active .results-actions .sort-select,
+.result-view-active .results-section.active .results-freshness{
+    box-sizing:border-box !important;
+}
+.result-view-active .results-section.active .results-actions .sort-select{
+    min-width:148px;
+}
+@media(max-width:700px){
+    .result-view-active .results-section.active .results-header{
+        padding:10px 12px !important;
+    }
+    .result-view-active .results-section.active .results-actions .sort-select{
+        min-width:0;
+    }
+}
