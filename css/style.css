@@ -2643,7 +2643,7 @@ body.dark{background:radial-gradient(circle at 50% -10%,rgba(99,102,241,.13),tra
     display:block;
     margin:0 0 5px;
     color:var(--gray-800);
-    font-size:13px;
+    font-size:14.5px;
     line-height:1.3;
     font-weight:800;
     letter-spacing:-.01em;
@@ -2741,7 +2741,7 @@ body.dark{background:radial-gradient(circle at 50% -10%,rgba(99,102,241,.13),tra
     }
 
     .trust-item strong{
-        font-size:11px;
+        font-size:12px;
     }
 
     .trust-item span{
