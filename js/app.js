@@ -262,11 +262,30 @@ async function searchByImage() {
         if (searchInput) searchInput.value = query;
         APP_STATE.lastSearchQuery = query;
 
-        const terms = query.split(/\s+/).filter(Boolean);
+        const terms = query.split(/\s+/)
+            .map(token => token.replace(/^[^a-z0-9]+|[^a-z0-9%.-]+$/gi, ''))
+            .filter(Boolean);
+
+        const ignoredImageTerms = new Set([
+            'daraz','mall','official','store','shop','buy','cart','wishlist','share',
+            'home','search','login','sign','delivery','free','price','reviews','review',
+            'rating','sold','stock','quantity','select','color','size','description',
+            'specification','specifications','add','to','the','and','for','with'
+        ]);
+
+        const cleanTerms = terms.filter(token =>
+            token.length > 1 && !ignoredImageTerms.has(token.toLowerCase())
+        );
+
+        // Image OCR is often imperfect. Search several progressively cleaner
+        // queries instead of sending the entire OCR sentence to marketplaces.
         const candidates = [
-            query,
-            terms.filter(token => token.length > 2).slice(0, 7).join(' '),
-            terms.filter(token => token.length > 2).slice(0, 5).join(' ')
+            cleanTerms.slice(0, 2).join(' '),
+            cleanTerms.slice(0, 3).join(' '),
+            cleanTerms.slice(0, 4).join(' '),
+            cleanTerms.slice(0, 6).join(' '),
+            cleanTerms.slice(0, 8).join(' '),
+            query
         ].filter((value, index, arr) => value && arr.indexOf(value) === index);
 
         let data = { products: [], errors: [] };
