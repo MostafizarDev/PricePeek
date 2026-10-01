@@ -497,6 +497,8 @@ async function sharePricePeek(platform) {
     }
 
     if (platform === 'messenger') {
+        // On supported phones/tablets, the native share sheet can hand the
+        // link directly to Messenger when Messenger is installed.
         if (navigator.share) {
             try {
                 await navigator.share({
@@ -510,9 +512,21 @@ async function sharePricePeek(platform) {
             }
         }
 
-        // Messenger does not provide a public web share URL that works
-        // without a registered Facebook App ID. Fall back to Facebook sharing.
-        window.open(shareLinks.facebook, '_blank', 'noopener,noreferrer,width=700,height=650');
+        // Desktop browsers do not expose a reliable public Messenger
+        // "share this URL" endpoint without a Meta App ID. Copy the link
+        // and open Messenger so the user can paste it immediately.
+        try {
+            await navigator.clipboard.writeText(shareUrl);
+        } catch (error) {
+            const fallback = document.createElement('textarea');
+            fallback.value = shareUrl;
+            document.body.appendChild(fallback);
+            fallback.select();
+            document.execCommand('copy');
+            fallback.remove();
+        }
+        window.open('https://www.messenger.com/', '_blank', 'noopener,noreferrer');
+        showNotification('Link copied — paste it in Messenger', 'success');
         return;
     }
 
