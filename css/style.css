@@ -3091,3 +3091,86 @@ body.dark{background:radial-gradient(circle at 50% -10%,rgba(99,102,241,.13),tra
         padding:0 9px !important;
     }
 }
+
+
+/* ============ FOOTER SHARE — REFERENCE LAYOUT ============ */
+.footer-social{
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+    flex-wrap:nowrap;
+    gap:10px;
+    margin-top:12px;
+}
+.footer-social-label{
+    display:inline-flex;
+    align-items:center;
+    height:42px;
+    margin-right:2px;
+    color:#cbd5e1;
+    font-size:16px;
+    font-weight:600;
+    line-height:1;
+}
+.footer-social-btn{
+    width:54px !important;
+    height:54px !important;
+    min-width:54px !important;
+    flex:0 0 54px !important;
+    padding:0 !important;
+    display:inline-flex !important;
+    align-items:center;
+    justify-content:center;
+    border:1px solid rgba(96,165,250,.20);
+    border-radius:14px;
+    background:rgba(30,41,59,.28);
+    color:#9fb0ca;
+    box-shadow:none;
+}
+.footer-social-btn svg{
+    display:block !important;
+    width:23px !important;
+    height:23px !important;
+    min-width:23px !important;
+    min-height:23px !important;
+    max-width:23px !important;
+    max-height:23px !important;
+    flex:0 0 23px !important;
+}
+.footer-social-btn:hover{
+    transform:translateY(-1px);
+    color:#e2e8f0;
+    background:rgba(51,65,85,.55);
+    border-color:rgba(96,165,250,.38);
+    box-shadow:0 6px 18px rgba(0,0,0,.14);
+}
+.footer-social-btn:active{transform:scale(.97);}
+.footer-social-btn[data-share="facebook"]:hover{background:#1877f2;border-color:#1877f2;color:#fff;}
+.footer-social-btn[data-share="whatsapp"]:hover{background:#16a34a;border-color:#16a34a;color:#fff;}
+.footer-social-btn[data-share="x"]:hover{background:#000;border-color:#000;color:#fff;}
+.footer-social-btn[data-share="telegram"]:hover{background:#229ed9;border-color:#229ed9;color:#fff;}
+
+@media(max-width:520px){
+    .footer-social{gap:7px;overflow-x:auto;padding-bottom:2px;}
+    .footer-social-label{
+        height:38px;
+        font-size:14px;
+        flex:0 0 auto;
+    }
+    .footer-social-btn{
+        width:42px !important;
+        height:42px !important;
+        min-width:42px !important;
+        flex-basis:42px !important;
+        border-radius:11px;
+    }
+    .footer-social-btn svg{
+        width:18px !important;
+        height:18px !important;
+        min-width:18px !important;
+        min-height:18px !important;
+        max-width:18px !important;
+        max-height:18px !important;
+        flex-basis:18px !important;
+    }
+}
