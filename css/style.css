@@ -2572,3 +2572,23 @@ body.dark{background:radial-gradient(circle at 50% -10%,rgba(99,102,241,.13),tra
 .live-status{
     line-height:1.5;
 }
+
+
+.pricepeek-note-icon{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    flex:0 0 16px;
+    width:16px;
+    height:16px;
+    color:#4f46e5;
+    vertical-align:middle;
+}
+
+.pricepeek-note-icon svg{
+    display:block;
+}
+
+.dark .pricepeek-note-icon{
+    color:#a5b4fc;
+}
