@@ -74,11 +74,17 @@ if (storesSection) storesSection.style.display = 'none';
     try {
         const { products, errors } = await scraperManager.searchAll(query);
         if (products.length === 0) {
+            APP_STATE.allProducts = [];
+            APP_STATE.filteredProducts = [];
+            const resultsCount = document.getElementById('resultsCount');
+            if (resultsCount) resultsCount.textContent = 'Found 0 products';
+            const queryEl = document.getElementById('resultsQuery');
+            if (queryEl) queryEl.textContent = `No matching products for “${query}”`;
             document.getElementById('productGrid').innerHTML = `
                 <div class="error-state" style="grid-column:1/-1;">
                     <div style="font-size:48px;">🔍</div>
-                    <h3>No products found for "${query}"</h3>
-                    <p>Try different keywords or check your spelling</p>
+                    <h3>No products found for "${escapeHTML(query)}"</h3>
+                    <p>Try a shorter product name, brand, or model number.</p>
                     <button class="retry-btn" onclick="performSearch(true)">🔄 Retry Search</button>
                 </div>`;
         } else {
@@ -205,35 +211,32 @@ async function imageToSearchQuery(file) {
         }
     });
 
-    const rawLines = Array.isArray(result?.data?.lines)
-        ? result.data.lines.map(line => String(line?.text || '').trim())
-        : [];
+    const raw = String(result?.data?.text || '')
+        .replace(/[|\\{}[\]<>]/g, ' ')
+        .replace(/[®©™]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
 
-    const noise = /^(buy|shop|add to cart|cart|wishlist|share|home|search|login|sign in|price|reviews?|rating|delivery|free delivery|quantity|select|color|size|description|specifications?)$/i;
+    if (!raw) throw new Error('No readable product text was found in this image. Try a clearer product photo or screenshot.');
 
-    const usefulLines = rawLines
-        .map(line => line.replace(/[|\\{}[\]<>]/g, ' ').replace(/\s+/g, ' ').trim())
-        .filter(line => line.length >= 3)
-        .filter(line => /[a-z0-9]/i.test(line))
-        .filter(line => !noise.test(line))
-        .filter(line => !/^https?:\/\//i.test(line))
-        .filter((line, index, arr) => arr.indexOf(line) === index);
+    const noise = new Set([
+        'daraz','mall','official','store','shop','buy','cart','wishlist','share',
+        'home','search','login','sign','delivery','free','price','reviews','review',
+        'rating','sold','stock','quantity','select','color','size','description',
+        'specification','specifications','add','to','the','and','for'
+    ]);
 
-    let text = usefulLines.slice(0, 6).join(' ').trim();
+    const tokens = raw.split(/\s+/)
+        .map(token => token.replace(/^[^a-z0-9]+|[^a-z0-9%.-]+$/gi, ''))
+        .filter(Boolean)
+        .filter(token => !noise.has(token.toLowerCase()))
+        .filter(token => token.length >= 2 || /^\d+(?:\.\d+)?w?$/i.test(token))
+        .filter(token => !/^[a-z]$/i.test(token))
+        .filter((token, index, arr) => arr.findIndex(x => x.toLowerCase() === token.toLowerCase()) === index);
 
-    if (!text) {
-        text = String(result?.data?.text || '')
-            .replace(/[|\\{}[\]<>]/g, ' ')
-            .replace(/\s+/g, ' ')
-            .trim();
-    }
-
-    if (!text) {
-        throw new Error('No readable product text was found in this image. Try a clearer product photo or screenshot.');
-    }
-
-    // Keep the query focused so marketplace search is not polluted by UI text.
-    return text.slice(0, 140);
+    const focused = tokens.slice(0, 10).join(' ').trim();
+    if (!focused) throw new Error('The image does not contain enough readable product information. Try a clearer product image or screenshot.');
+    return focused.slice(0, 120);
 }
 
 async function searchByImage() {
@@ -259,8 +262,61 @@ async function searchByImage() {
         if (searchInput) searchInput.value = query;
         APP_STATE.lastSearchQuery = query;
 
-        // Convert the image result into the normal PricePeek search flow.
-        // This keeps product counts, filters, sorting, matching and result cards consistent.
+        const terms = query.split(/\s+/).filter(Boolean);
+        const candidates = [
+            query,
+            terms.filter(token => token.length > 2).slice(0, 7).join(' '),
+            terms.filter(token => token.length > 2).slice(0, 5).join(' ')
+        ].filter((value, index, arr) => value && arr.indexOf(value) === index);
+
+        let data = { products: [], errors: [] };
+
+        for (let i = 0; i < candidates.length; i++) {
+            if (loadingText) loadingText.textContent = i === 0
+                ? 'Searching supported stores...'
+                : `Trying a broader product search... ${i + 1}/${candidates.length}`;
+
+            data = await scraperManager.searchAll(candidates[i]);
+
+            if (Array.isArray(data.products) && data.products.length > 0) {
+                APP_STATE.lastSearchQuery = candidates[i];
+                if (searchInput) searchInput.value = candidates[i];
+                break;
+            }
+        }
+
+        const products = Array.isArray(data.products) ? data.products : [];
+        APP_STATE.allProducts = products;
+        APP_STATE.filteredProducts = [];
+
+        const resultsCount = document.getElementById('resultsCount');
+        if (products.length > 0) {
+            APP_STATE.currentFilter = 'all';
+            applyFiltersAndSort();
+        } else {
+            if (resultsCount) resultsCount.textContent = 'Found 0 products';
+            const queryEl = document.getElementById('resultsQuery');
+            if (queryEl) queryEl.textContent = `No matching products for “${query}”`;
+            if (productGrid) productGrid.innerHTML = `<div class="error-state" style="grid-column:1/-1;">
+                <div style="font-size:48px;">📷</div>
+                <h3>We couldn't find this product</h3>
+                <p>The image text was readable, but supported stores did not return a matching product. Try editing the search text to the product name or model number.</p>
+                <button class="retry-btn" type="button" onclick="document.getElementById('mainSearch').focus()">Edit Search</button>
+            </div>`;
+        }
+    } catch (error) {
+        console.error('Image search error:', error);
+        APP_STATE.allProducts = [];
+        APP_STATE.filteredProducts = [];
+        const resultsCount = document.getElementById('resultsCount');
+        if (resultsCount) resultsCount.textContent = 'Found 0 products';
+        if (productGrid) productGrid.innerHTML = `<div class="error-state" style="grid-column:1/-1;">
+            <div style="font-size:48px;">📷</div>
+            <h3>We couldn't read this product image</h3>
+            <p>${escapeHTML(error.message || 'Try a clearer product image or screenshot.')}</p>
+            <button class="retry-btn" type="button" onclick="document.getElementById('mainSearch').focus()">Edit Search</button>
+        </div>`;
+    } finally {
         IMAGE_SEARCH_STATE.file = null;
         if (IMAGE_SEARCH_STATE.objectUrl) URL.revokeObjectURL(IMAGE_SEARCH_STATE.objectUrl);
         IMAGE_SEARCH_STATE.objectUrl = '';
@@ -268,20 +324,6 @@ async function searchByImage() {
         if (imageInput) imageInput.value = '';
         const hint = document.getElementById('imageSearchHint');
         if (hint) hint.innerHTML = '📷 Image text detected. You can edit the search text and search again.';
-
-        APP_STATE.isSearching = false;
-        await performSearch();
-    } catch (error) {
-        console.error('Image search error:', error);
-        if (productGrid) {
-            productGrid.innerHTML = `<div class="error-state" style="grid-column:1/-1;">
-                <div style="font-size:48px;">📷</div>
-                <h3>We couldn't read this product image</h3>
-                <p>${escapeHTML(error.message || 'Try a clearer product image or screenshot.')}</p>
-                <button class="retry-btn" type="button" onclick="document.getElementById('mainSearch').focus()">Edit Search</button>
-            </div>`;
-        }
-    } finally {
         IMAGE_SEARCH_STATE.isProcessing = false;
         APP_STATE.isSearching = false;
         if (loadingSpinner) loadingSpinner.classList.remove('active');
