@@ -22,6 +22,7 @@ function scrollToSearch() {
     // Always return to the homepage/search view, even when the user is
     // currently on Best Deals, Wishlist, Compare, or a result view.
     document.body.classList.remove('result-view-active');
+    document.body.classList.remove('best-deals-page');
 
     const homeIds = ['heroSection', 'quickSuggestions', 'liveStatus', 'stores-section', 'howItWorks'];
     homeIds.forEach(id => {
