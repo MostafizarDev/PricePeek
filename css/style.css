@@ -2256,3 +2256,59 @@ body.dark{background:radial-gradient(circle at 50% -10%,rgba(99,102,241,.13),tra
         height:38px !important;
     }
 }
+
+
+/* ============ RESULT PAGE FINAL POLISH ============ */
+.result-view-active .notification {
+    display:none !important;
+    visibility:hidden !important;
+    pointer-events:none !important;
+}
+
+.result-view-active .faq-section {
+    display:none !important;
+}
+
+/* Keep the global footer visible on result pages. */
+.result-view-active .footer {
+    display:block !important;
+    margin-top:48px !important;
+}
+
+/* Keep header visible while browsing results. */
+.result-view-active .site-header,
+.result-view-active header {
+    position:sticky !important;
+    top:0 !important;
+    z-index:100 !important;
+}
+
+/* Fix search text/button vertical alignment. */
+.result-view-active .hero-section .search-container,
+.result-view-active .hero-section .search-wrapper,
+.result-view-active .hero-section .search-box {
+    align-items:center !important;
+}
+
+.result-view-active .hero-section .search-input {
+    height:100% !important;
+    min-height:0 !important;
+    padding-top:0 !important;
+    padding-bottom:0 !important;
+    line-height:48px !important;
+    box-sizing:border-box !important;
+    vertical-align:middle !important;
+}
+
+.result-view-active .hero-section .search-button {
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    line-height:1 !important;
+}
+
+@media (max-width:700px) {
+    .result-view-active .hero-section .search-input {
+        line-height:44px !important;
+    }
+}
