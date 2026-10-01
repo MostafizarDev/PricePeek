@@ -85,7 +85,7 @@ if (storesSection) storesSection.style.display = 'none';
             APP_STATE.allProducts = products;
             APP_STATE.currentFilter = 'all';
             applyFiltersAndSort();
-            showNotification(`Found ${products.length} products`, 'success');
+            /* Result view is intentionally quiet; no completion popup. */
         }
     } catch (error) {
         console.error('Search error:', error);
@@ -127,7 +127,7 @@ async function searchByUrlFromInput(url) {
             APP_STATE.allProducts = data.products;
             APP_STATE.currentFilter = 'all';
             applyFiltersAndSort();
-            showNotification(`Found ${data.products.length} products`, 'success');
+            /* Result view is intentionally quiet; no completion popup. */
         } else {
             document.getElementById('productGrid').innerHTML = `
                 <div class="error-state" style="grid-column:1/-1;">
@@ -222,7 +222,7 @@ function applyFiltersAndSort() {
     }
     APP_STATE.filteredProducts = products;
     renderProducts(products);
-    document.getElementById('resultsCount').textContent = `Found ${products.length} offers`;
+    document.getElementById('resultsCount').textContent = `Found ${products.length} products`;
     const queryEl = document.getElementById('resultsQuery');
     if (queryEl) {
         const q = APP_STATE.lastSearchQuery || document.getElementById('mainSearch')?.value?.trim() || '';
