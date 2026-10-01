@@ -170,6 +170,15 @@ let IMAGE_SEARCH_STATE = {
     isProcessing: false
 };
 
+const OCR_NOISE_WORDS = new Set([
+    'daraz', 'mall', 'shop', 'store', 'official', 'seller', 'price', 'buy', 'cart',
+    'wishlist', 'reviews', 'review', 'home', 'search', 'delivery', 'login', 'signup',
+    'account', 'category', 'categories', 'add', 'compare', 'sale', 'offer', 'offers',
+    'discount', 'shipping', 'free', 'authentic', 'original', 'limited', 'rating',
+    'stock', 'available', 'availability', 'view', 'details', 'click', 'now',
+    'tk', 'bdt'
+]);
+
 function openImageSearch() {
     const input = document.getElementById('imageSearchInput');
     if (input) input.click();
@@ -190,12 +199,72 @@ function setImageSearchFile(file) {
         showNotification('Please upload or paste a valid image.', 'error');
         return;
     }
+
     if (IMAGE_SEARCH_STATE.objectUrl) URL.revokeObjectURL(IMAGE_SEARCH_STATE.objectUrl);
     IMAGE_SEARCH_STATE.file = file;
     IMAGE_SEARCH_STATE.objectUrl = URL.createObjectURL(file);
+
     const hint = document.getElementById('imageSearchHint');
     if (hint) {
-        hint.innerHTML = `<span class="image-search-selected"><img src="${IMAGE_SEARCH_STATE.objectUrl}" alt="Selected product image"><span><strong>Image ready.</strong> Click Search to compare prices.</span><button type="button" onclick="clearImageSearch()" aria-label="Remove image">×</button></span>`;
+        hint.innerHTML = '<span class="image-search-selected"><img src="' + IMAGE_SEARCH_STATE.objectUrl + '" alt="Selected product image"><span><strong>Image ready.</strong> Click Search to compare prices.</span><button type="button" onclick="clearImageSearch()" aria-label="Remove image">×</button></span>';
+    }
+}
+
+function cleanOcrProductQuery(rawText = '') {
+    const raw = String(rawText || '')
+        .replace(/[\r\n]+/g, ' ')
+        .replace(/[|•·]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    if (!raw) return '';
+
+    const tokens = raw
+        .split(/\s+/)
+        .map(token => token
+            .replace(/^[^a-zA-Z0-9%+.-]+|[^a-zA-Z0-9%+./-]+$/g, '')
+            .trim())
+        .filter(Boolean);
+
+    const useful = [];
+    for (const token of tokens) {
+        const lower = token.toLowerCase();
+
+        if (OCR_NOISE_WORDS.has(lower)) continue;
+        if (token.length <= 1 && !/[0-9]/.test(token)) continue;
+        if (/^[^a-z0-9]+$/i.test(token)) continue;
+        if (/^(?:xx+|ww+|nn+|iii+|lll+|sid|cbe)$/i.test(token)) continue;
+
+        const looksLikeSpec = /\d/.test(token) || /%|w|hz|mah|gb|tb|mb|inch|inches|mm|cm/i.test(token);
+        const looksLikeWord = /[a-z]{3,}/i.test(token);
+
+        if (looksLikeSpec || looksLikeWord) useful.push(token);
+    }
+
+    const unique = [];
+    const seen = new Set();
+    for (const token of useful) {
+        const key = token.toLowerCase();
+        if (seen.has(key)) continue;
+        seen.add(key);
+        unique.push(token);
+        if (unique.length >= 10) break;
+    }
+
+    return unique.join(' ').slice(0, 120).trim();
+}
+
+async function extractLocalOcr(file) {
+    if (typeof Tesseract === 'undefined' || typeof Tesseract.recognize !== 'function') {
+        return '';
+    }
+
+    try {
+        const result = await Tesseract.recognize(file, 'eng');
+        return String(result?.data?.text || '').trim().slice(0, 6000);
+    } catch (error) {
+        console.warn('[PricePeek] Local OCR failed:', error);
+        return '';
     }
 }
 
@@ -224,32 +293,63 @@ async function fileToDataUrl(file, maxSide = 1600, quality = 0.82) {
 }
 
 async function imageToSearchQuery(file) {
+    const ocrText = await extractLocalOcr(file);
+    const ocrFallbackQuery = cleanOcrProductQuery(ocrText);
     const image = await fileToDataUrl(file);
-    const response = await fetch('/api/image-search', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image }),
-    });
 
-    const text = await response.text();
-    let data = null;
-    try { data = text ? JSON.parse(text) : null; } catch {}
+    try {
+        const response = await fetch('/api/image-search', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image, ocrText }),
+        });
 
-    if (!response.ok) {
-        throw new Error(data?.error || 'Visual product analysis failed.');
+        const text = await response.text();
+        let data = null;
+        try { data = text ? JSON.parse(text) : null; } catch {}
+
+        if (response.ok) {
+            const query = String(data?.searchQuery || data?.productName || '')
+                .replace(/[\r\n]+/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+
+            if (query) {
+                return {
+                    query: query.slice(0, 120),
+                    productName: String(data?.productName || query).trim().slice(0, 120),
+                    confidence: data?.confidence,
+                    source: data?.source || 'gemini-vision+ocr',
+                    ocrText
+                };
+            }
+        }
+
+        if (ocrFallbackQuery) {
+            return {
+                query: ocrFallbackQuery,
+                productName: ocrFallbackQuery,
+                confidence: null,
+                source: 'local-ocr',
+                ocrText,
+                fallbackReason: data?.error || 'Visual API unavailable'
+            };
+        }
+
+        throw new Error(data?.error || 'The image did not contain enough reliable product information.');
+    } catch (error) {
+        if (ocrFallbackQuery) {
+            return {
+                query: ocrFallbackQuery,
+                productName: ocrFallbackQuery,
+                confidence: null,
+                source: 'local-ocr',
+                ocrText,
+                fallbackReason: error.message
+            };
+        }
+        throw error;
     }
-
-    const query = String(data?.searchQuery || data?.productName || '')
-        .replace(/[\\r\\n]+/g, ' ')
-        .replace(/\\s+/g, ' ')
-        .trim();
-
-    if (!query) throw new Error('The image did not contain enough reliable product information.');
-    return {
-        query: query.slice(0, 120),
-        productName: String(data?.productName || query).trim().slice(0, 120),
-        confidence: data?.confidence,
-    };
 }
 
 async function searchByImage() {
@@ -266,7 +366,7 @@ async function searchByImage() {
     enterResultView();
 
     if (loadingSpinner) loadingSpinner.classList.add('active');
-    if (loadingText) loadingText.textContent = 'Analyzing product image...';
+    if (loadingText) loadingText.textContent = 'Reading product text + visual details...';
     if (productGrid) productGrid.innerHTML = '';
 
     try {
@@ -274,9 +374,17 @@ async function searchByImage() {
         const query = identification.query;
         const searchInput = document.getElementById('mainSearch');
 
-        // Only the clean visual+OCR product query goes into the search box.
-        if (searchInput) searchInput.value = query;
+        if (searchInput) {
+            searchInput.value = query;
+            searchInput.focus();
+            searchInput.select();
+        }
         APP_STATE.lastSearchQuery = query;
+
+        const hint = document.getElementById('imageSearchHint');
+        if (hint) {
+            hint.innerHTML = '✦ Detected product: <strong>' + escapeHTML(query) + '</strong> — edit the search box if needed, then press <strong>Search</strong>.';
+        }
 
         if (loadingText) loadingText.textContent = 'Searching supported stores...';
         const data = await scraperManager.searchAll(query);
@@ -293,14 +401,14 @@ async function searchByImage() {
         } else {
             if (resultsCount) resultsCount.textContent = 'Found 0 products';
             const queryEl = document.getElementById('resultsQuery');
-            if (queryEl) queryEl.textContent = `No matching products for “${query}”`;
+            if (queryEl) queryEl.textContent = 'No matching products for “' + query + '”';
             if (productGrid) {
-                productGrid.innerHTML = `<div class="error-state" style="grid-column:1/-1;">
-                    <div style="font-size:48px;">📷</div>
-                    <h3>We couldn't find this product</h3>
-                    <p>Visual + text analysis identified <strong>${escapeHTML(query)}</strong>, but supported stores did not return a matching product. You can edit the search text and try again.</p>
-                    <button class="retry-btn" type="button" onclick="document.getElementById('mainSearch').focus()">Edit Search</button>
-                </div>`;
+                productGrid.innerHTML = '<div class="error-state" style="grid-column:1/-1;">' +
+                    '<div style="font-size:48px;">📷</div>' +
+                    '<h3>We couldn\\'t find this product</h3>' +
+                    '<p>Detected <strong>' + escapeHTML(query) + '</strong>. Edit the search text above and try again if the OCR/visual result needs correction.</p>' +
+                    '<button class="retry-btn" type="button" onclick="document.getElementById(\\'mainSearch\\').focus()">Edit Search</button>' +
+                    '</div>';
             }
         }
     } catch (error) {
@@ -312,12 +420,12 @@ async function searchByImage() {
         if (resultsCount) resultsCount.textContent = 'Found 0 products';
 
         if (productGrid) {
-            productGrid.innerHTML = `<div class="error-state" style="grid-column:1/-1;">
-                <div style="font-size:48px;">📷</div>
-                <h3>Image search needs a little more information</h3>
-                <p>${escapeHTML(error.message || 'Please try another product image or screenshot.')}</p>
-                <button class="retry-btn" type="button" onclick="document.getElementById('mainSearch').focus()">Edit Search</button>
-            </div>`;
+            productGrid.innerHTML = '<div class="error-state" style="grid-column:1/-1;">' +
+                '<div style="font-size:48px;">📷</div>' +
+                '<h3>Image search needs a little more information</h3>' +
+                '<p>' + escapeHTML(error.message || 'Please try another product image or screenshot.') + '</p>' +
+                '<button class="retry-btn" type="button" onclick="document.getElementById(\\'mainSearch\\').focus()">Edit Search</button>' +
+                '</div>';
         }
     } finally {
         IMAGE_SEARCH_STATE.file = null;
@@ -325,8 +433,6 @@ async function searchByImage() {
         IMAGE_SEARCH_STATE.objectUrl = '';
         const imageInput = document.getElementById('imageSearchInput');
         if (imageInput) imageInput.value = '';
-        const hint = document.getElementById('imageSearchHint');
-        if (hint) hint.innerHTML = '📷 Search by image: upload a product image or paste an image with <strong>Ctrl + V</strong>';
         IMAGE_SEARCH_STATE.isProcessing = false;
         APP_STATE.isSearching = false;
         if (loadingSpinner) loadingSpinner.classList.remove('active');
