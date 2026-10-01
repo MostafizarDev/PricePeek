@@ -476,7 +476,6 @@ async async function sharePricePeek(platform) {
 
     const shareLinks = {
         facebook: 'https://www.facebook.com/sharer/sharer.php?u=' + encodedUrl,
-        x: 'https://twitter.com/intent/tweet?text=' + encodedText + '&url=' + encodedUrl,
         whatsapp: 'https://wa.me/?text=' + encodeURIComponent(shareText + ' ' + shareUrl),
         telegram: 'https://t.me/share/url?url=' + encodedUrl + '&text=' + encodedText
     };
