@@ -61,8 +61,14 @@ function scoreProduct(product, query) {
 
 async function runScraper(scraper, query) {
   const started = Date.now();
+  const SCRAPER_BUDGET_MS = 3500;
   try {
-    const products = await scraper.search(query);
+    const products = await Promise.race([
+      scraper.search(query),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Marketplace scraper timeout')), SCRAPER_BUDGET_MS)
+      ),
+    ]);
     return {
       marketplace: scraper.marketplace,
       products: (products || []).map(normalizeProduct),
@@ -80,7 +86,10 @@ async function runScraper(scraper, query) {
 }
 
 async function searchAll(query) {
-  const settled = await Promise.all(scrapers.map(scraper => runScraper(scraper, query)));
+  const settled = await Promise.all(
+    scrapers.map(scraper => runScraper(scraper, query))
+  );
+
   const products = settled.flatMap(item => item.products);
   const errors = settled
     .filter(item => item.error)
