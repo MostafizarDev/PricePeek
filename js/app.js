@@ -926,6 +926,12 @@ async function showDealsPage() {
     const storesSection = document.getElementById('stores-section');
     if (storesSection) storesSection.style.display = 'none';
 
+    // Keep the Best Deals page focused on deal results only.
+    const trustStrip = document.querySelector('.trust-strip');
+    if (trustStrip) trustStrip.style.display = 'none';
+    const howItWorks = document.getElementById('howItWorks');
+    if (howItWorks) howItWorks.style.display = 'none';
+
     document.getElementById('loadingSpinner').classList.add('active');
     document.getElementById('resultsSection').classList.add('active');
     const popularQueries = ['phone', 'laptop', 'tv', 'headphone', 'mouse'];
