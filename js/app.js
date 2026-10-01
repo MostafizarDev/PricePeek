@@ -195,6 +195,7 @@ function setImageSearchFile(file) {
 
 async function imageToSearchQuery(file) {
     if (!window.Tesseract) throw new Error('Image search engine is still loading. Please try again.');
+
     const result = await Tesseract.recognize(file, 'eng', {
         logger: message => {
             if (message?.status === 'recognizing text' && Number.isFinite(message.progress)) {
@@ -203,9 +204,36 @@ async function imageToSearchQuery(file) {
             }
         }
     });
-    const text = String(result?.data?.text || '').replace(/[|\\{}[\]<>]/g, ' ').replace(/\s+/g, ' ').trim();
-    if (!text) throw new Error('No readable product text was found in this image. Try a clearer product photo or screenshot.');
-    return text.slice(0, 220);
+
+    const rawLines = Array.isArray(result?.data?.lines)
+        ? result.data.lines.map(line => String(line?.text || '').trim())
+        : [];
+
+    const noise = /^(buy|shop|add to cart|cart|wishlist|share|home|search|login|sign in|price|reviews?|rating|delivery|free delivery|quantity|select|color|size|description|specifications?)$/i;
+
+    const usefulLines = rawLines
+        .map(line => line.replace(/[|\\{}[\]<>]/g, ' ').replace(/\s+/g, ' ').trim())
+        .filter(line => line.length >= 3)
+        .filter(line => /[a-z0-9]/i.test(line))
+        .filter(line => !noise.test(line))
+        .filter(line => !/^https?:\/\//i.test(line))
+        .filter((line, index, arr) => arr.indexOf(line) === index);
+
+    let text = usefulLines.slice(0, 6).join(' ').trim();
+
+    if (!text) {
+        text = String(result?.data?.text || '')
+            .replace(/[|\\{}[\]<>]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    if (!text) {
+        throw new Error('No readable product text was found in this image. Try a clearer product photo or screenshot.');
+    }
+
+    // Keep the query focused so marketplace search is not polluted by UI text.
+    return text.slice(0, 140);
 }
 
 async function searchByImage() {
