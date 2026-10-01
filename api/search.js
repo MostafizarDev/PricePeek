@@ -61,7 +61,7 @@ function scoreProduct(product, query) {
 
 async function runScraper(scraper, query) {
   const started = Date.now();
-  const SCRAPER_BUDGET_MS = 3500;
+  const SCRAPER_BUDGET_MS = 6500;
   try {
     const products = await Promise.race([
       scraper.search(query),
