@@ -468,16 +468,16 @@ function handleSmartSearch() {
 }
 
 // ============ HOMEPAGE SOCIAL SHARE ============
-async function sharePricePeek(platform) {
-    const shareUrl = window.location.href.split('#')[0];
+async async function sharePricePeek(platform) {
+    const shareUrl = window.location.origin + '/';
     const shareText = 'Compare prices across Bangladesh with PricePeekBD — Peek Before You Pay.';
     const encodedUrl = encodeURIComponent(shareUrl);
     const encodedText = encodeURIComponent(shareText);
+
     const shareLinks = {
         facebook: 'https://www.facebook.com/sharer/sharer.php?u=' + encodedUrl,
         x: 'https://twitter.com/intent/tweet?text=' + encodedText + '&url=' + encodedUrl,
         whatsapp: 'https://wa.me/?text=' + encodeURIComponent(shareText + ' ' + shareUrl),
-        messenger: 'https://www.facebook.com/dialog/send?link=' + encodedUrl,
         telegram: 'https://t.me/share/url?url=' + encodedUrl + '&text=' + encodedText
     };
 
@@ -494,6 +494,26 @@ async function sharePricePeek(platform) {
             fallback.remove();
             showNotification('PricePeekBD link copied', 'success');
         }
+        return;
+    }
+
+    if (platform === 'messenger') {
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: 'PricePeekBD',
+                    text: shareText,
+                    url: shareUrl
+                });
+                return;
+            } catch (error) {
+                if (error?.name === 'AbortError') return;
+            }
+        }
+
+        // Messenger does not provide a public web share URL that works
+        // without a registered Facebook App ID. Fall back to Facebook sharing.
+        window.open(shareLinks.facebook, '_blank', 'noopener,noreferrer,width=700,height=650');
         return;
     }
 
