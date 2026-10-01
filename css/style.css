@@ -2456,3 +2456,37 @@ body.dark{background:radial-gradient(circle at 50% -10%,rgba(99,102,241,.13),tra
 @media (max-width:700px) {
     .search-shortcut { display:none; }
 }
+
+
+/* ============ RESULT SEARCH FINAL ALIGNMENT ============ */
+/* Ctrl+K still works, but its visual label is intentionally hidden. */
+.search-shortcut{display:none !important;}
+
+/* Keep the result-page search centered horizontally. */
+.result-view-active .hero-section .search-wrapper{
+    width:min(760px, calc(100% - 32px)) !important;
+    max-width:760px !important;
+    margin:0 auto !important;
+}
+.result-view-active .hero-section .search-container{
+    width:100% !important;
+    margin:0 auto !important;
+}
+
+/* Center the result-page intro text. */
+.result-view-active .result-search-intro{
+    text-align:center !important;
+}
+.result-view-active .result-search-intro h2,
+.result-view-active .result-search-intro p{
+    text-align:center !important;
+    margin-left:auto !important;
+    margin-right:auto !important;
+}
+
+/* Better text/input alignment inside the search box. */
+.result-view-active .hero-section .search-input{
+    text-align:left !important;
+    display:flex;
+    align-items:center;
+}
