@@ -471,7 +471,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!file) return;
         event.preventDefault();
         setImageSearchFile(file);
-        showNotification('Image pasted. Click Search to compare prices.', 'success');
     });
 });
 
