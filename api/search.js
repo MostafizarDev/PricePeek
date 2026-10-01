@@ -95,7 +95,9 @@ module.exports = async (req, res) => {
 
   try {
     if (url) {
-      const decodedUrl = decodeURIComponent(url);
+      let decodedUrl = decodeURIComponent(url).trim();
+      if (/^www\\./i.test(decodedUrl)) decodedUrl = 'https://' + decodedUrl;
+      else if (/^[^:/?#]+\\.[a-z]{2,}(?:\\/|$)/i.test(decodedUrl)) decodedUrl = 'https://' + decodedUrl;
       let sourceProduct = null;
       const sourceScraper = sourceFromUrl(decodedUrl);
 
