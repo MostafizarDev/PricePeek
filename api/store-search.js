@@ -39,7 +39,7 @@ function cleanQuery(value) {
 }
 
 module.exports = async (req, res) => {
-  res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+  res.setHeader('Cache-Control', 'no-store');
 
   const storeId = String(req.query.store || '').toLowerCase().trim();
   const query = cleanQuery(req.query.q);
