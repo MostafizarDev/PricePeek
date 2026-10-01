@@ -3174,3 +3174,61 @@ body.dark{background:radial-gradient(circle at 50% -10%,rgba(99,102,241,.13),tra
         flex-basis:18px !important;
     }
 }
+
+
+/* Restore the original footer share icon sizing/layout with Copy Link last */
+.footer-social{
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+    flex-wrap:nowrap;
+    gap:8px;
+    margin-top:12px;
+}
+.footer-social-label{
+    display:inline-flex;
+    align-items:center;
+    height:32px;
+    margin-right:2px;
+    color:#cbd5e1;
+    font-size:16px;
+    font-weight:600;
+    line-height:1;
+}
+.footer-social-btn{
+    width:32px !important;
+    height:32px !important;
+    min-width:32px !important;
+    flex:0 0 32px !important;
+    padding:0 !important;
+    border-radius:8px !important;
+    background:rgba(255,255,255,.06) !important;
+    border:1px solid rgba(148,163,184,.24) !important;
+    color:#cbd5e1 !important;
+    box-shadow:none !important;
+}
+.footer-social-btn svg{
+    width:16px !important;
+    height:16px !important;
+    min-width:16px !important;
+    min-height:16px !important;
+    max-width:16px !important;
+    max-height:16px !important;
+    flex:0 0 16px !important;
+}
+.footer-social-btn:hover{
+    transform:translateY(-1px);
+    color:#fff !important;
+    background:rgba(51,65,85,.6) !important;
+    border-color:rgba(255,255,255,.28) !important;
+    box-shadow:0 5px 14px rgba(0,0,0,.16) !important;
+}
+.footer-social-btn[data-share="facebook"]:hover{background:#1877f2 !important;border-color:#1877f2 !important;}
+.footer-social-btn[data-share="whatsapp"]:hover{background:#16a34a !important;border-color:#16a34a !important;}
+.footer-social-btn[data-share="x"]:hover{background:#000 !important;border-color:#000 !important;}
+.footer-social-btn[data-share="telegram"]:hover{background:#229ed9 !important;border-color:#229ed9 !important;}
+.footer-social-btn[data-share="copy"]:hover{background:#4f46e5 !important;border-color:#4f46e5 !important;}
+@media(max-width:520px){
+    .footer-social{gap:7px;overflow-x:auto;padding-bottom:2px;}
+    .footer-social-label{font-size:14px;}
+}
