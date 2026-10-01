@@ -39,7 +39,7 @@ const scrapers = [
 ];
 
 const cache = new Map();
-const CACHE_TTL = 10 * 60 * 1000;
+const CACHE_TTL = 30 * 1000;
 
 function extractProductNameFromUrl(input) {
   try {
@@ -120,7 +120,7 @@ function sourceFromUrl(decodedUrl) {
 }
 
 module.exports = async (req, res) => {
-  res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+  res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate=60');
 
   const { q, url } = req.query;
 
