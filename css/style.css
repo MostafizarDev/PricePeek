@@ -2490,3 +2490,35 @@ body.dark{background:radial-gradient(circle at 50% -10%,rgba(99,102,241,.13),tra
     display:flex;
     align-items:center;
 }
+
+
+/* ============ RESULT SEARCH: TRUE CENTER ALIGNMENT ============ */
+.result-view-active .result-search-intro,
+.result-view-active .hero-section .search-wrapper{
+    position:relative !important;
+    left:50% !important;
+    transform:translateX(-50%) !important;
+    margin-left:0 !important;
+    margin-right:0 !important;
+}
+
+.result-view-active .result-search-intro{
+    width:min(760px, calc(100% - 32px)) !important;
+}
+
+.result-view-active .hero-section .search-wrapper{
+    width:min(760px, calc(100% - 32px)) !important;
+    max-width:760px !important;
+}
+
+.result-view-active .result-search-intro h2,
+.result-view-active .result-search-intro p{
+    text-align:center !important;
+}
+
+@media(max-width:700px){
+    .result-view-active .result-search-intro,
+    .result-view-active .hero-section .search-wrapper{
+        width:calc(100% - 20px) !important;
+    }
+}
