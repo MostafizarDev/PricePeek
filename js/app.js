@@ -920,6 +920,7 @@ function closeComparisonModal() { document.getElementById('comparisonModal').cla
 // ============ DEALS PAGE ============
 async function showDealsPage() {
     setActiveNav('deals');
+    document.body.classList.add('best-deals-page');
     // হোম সেকশন লুকানো (ডিল পেজে যাওয়ার সময়ও)
     document.getElementById('heroSection').style.display = 'none';
     document.getElementById('liveStatus').style.display = 'none';
