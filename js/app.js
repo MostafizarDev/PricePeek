@@ -483,7 +483,7 @@ async function sharePricePeek(platform) {
     if (platform === 'copy') {
         try {
             await navigator.clipboard.writeText(shareUrl);
-            showNotification('PricePeekBD link copied', 'success');
+
         } catch (error) {
             const fallback = document.createElement('textarea');
             fallback.value = shareUrl;
@@ -491,7 +491,7 @@ async function sharePricePeek(platform) {
             fallback.select();
             document.execCommand('copy');
             fallback.remove();
-            showNotification('PricePeekBD link copied', 'success');
+
         }
         return;
     }
