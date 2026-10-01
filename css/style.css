@@ -3269,3 +3269,11 @@ body.dark{background:radial-gradient(circle at 50% -10%,rgba(99,102,241,.13),tra
 .stores-section .slider-arrow{
     z-index:3;
 }
+
+
+/* Fine-tune supported store cards */
+.stores-section .store-card{
+    flex-basis:175px;
+    width:175px;
+    min-width:175px;
+}
