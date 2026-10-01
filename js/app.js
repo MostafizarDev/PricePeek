@@ -157,20 +157,131 @@ function normalizeProductUrl(value) {
     return raw;
 }
 
-// ============ SMART SEARCH (URL vs keyword) ============
+// ============ IMAGE SEARCH ============
+let IMAGE_SEARCH_STATE = {
+    file: null,
+    objectUrl: '',
+    isProcessing: false
+};
+
+function openImageSearch() {
+    const input = document.getElementById('imageSearchInput');
+    if (input) input.click();
+}
+
+function clearImageSearch() {
+    if (IMAGE_SEARCH_STATE.objectUrl) URL.revokeObjectURL(IMAGE_SEARCH_STATE.objectUrl);
+    IMAGE_SEARCH_STATE.file = null;
+    IMAGE_SEARCH_STATE.objectUrl = '';
+    const input = document.getElementById('imageSearchInput');
+    if (input) input.value = '';
+    const hint = document.getElementById('imageSearchHint');
+    if (hint) hint.innerHTML = '📷 Search by image: upload a product image or paste an image with <strong>Ctrl + V</strong>';
+}
+
+function setImageSearchFile(file) {
+    if (!file || !file.type?.startsWith('image/')) {
+        showNotification('Please upload or paste a valid image.', 'error');
+        return;
+    }
+    if (IMAGE_SEARCH_STATE.objectUrl) URL.revokeObjectURL(IMAGE_SEARCH_STATE.objectUrl);
+    IMAGE_SEARCH_STATE.file = file;
+    IMAGE_SEARCH_STATE.objectUrl = URL.createObjectURL(file);
+    const hint = document.getElementById('imageSearchHint');
+    if (hint) {
+        hint.innerHTML = `<span class="image-search-selected"><img src="${IMAGE_SEARCH_STATE.objectUrl}" alt="Selected product image"><span><strong>Image ready.</strong> Click Search to compare prices.</span><button type="button" onclick="clearImageSearch()" aria-label="Remove image">×</button></span>`;
+    }
+}
+
+async function imageToSearchQuery(file) {
+    if (!window.Tesseract) throw new Error('Image search engine is still loading. Please try again.');
+    const result = await Tesseract.recognize(file, 'eng', {
+        logger: message => {
+            if (message?.status === 'recognizing text' && Number.isFinite(message.progress)) {
+                const loadingText = document.getElementById('loadingText');
+                if (loadingText) loadingText.textContent = `Reading product image... ${Math.round(message.progress * 100)}%`;
+            }
+        }
+    });
+    const text = String(result?.data?.text || '').replace(/[|\\{}[\]<>]/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!text) throw new Error('No readable product text was found in this image. Try a clearer product photo or screenshot.');
+    return text.slice(0, 220);
+}
+
+async function searchByImage() {
+    if (!IMAGE_SEARCH_STATE.file || IMAGE_SEARCH_STATE.isProcessing || APP_STATE.isSearching) return;
+    IMAGE_SEARCH_STATE.isProcessing = true;
+    const file = IMAGE_SEARCH_STATE.file;
+    APP_STATE.lastSearchQuery = '[Image Search]';
+    APP_STATE.isSearching = true;
+    enterResultView();
+
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const loadingText = document.getElementById('loadingText');
+    const productGrid = document.getElementById('productGrid');
+    if (loadingSpinner) loadingSpinner.classList.add('active');
+    if (loadingText) loadingText.textContent = 'Reading product image...';
+    if (productGrid) productGrid.innerHTML = '';
+
+    try {
+        const query = await imageToSearchQuery(file);
+        document.getElementById('mainSearch').value = query;
+        APP_STATE.lastSearchQuery = query;
+        if (loadingText) loadingText.textContent = 'Searching supported stores...';
+        const { products } = await scraperManager.searchAll(query);
+
+        if (!products || products.length === 0) {
+            productGrid.innerHTML = `<div class="error-state" style="grid-column:1/-1;"><div style="font-size:48px;">📷</div><h3>No products found from this image</h3><p>We could read the image, but supported stores did not return a matching product. You can edit the search text and search again.</p></div>`;
+        } else {
+            APP_STATE.allProducts = products;
+            APP_STATE.currentFilter = 'all';
+            applyFiltersAndSort();
+        }
+    } catch (error) {
+        console.error('Image search error:', error);
+        productGrid.innerHTML = `<div class="error-state" style="grid-column:1/-1;"><div style="font-size:48px;">📷</div><h3>We couldn't identify this product</h3><p>${escapeHTML(error.message || 'Try a clearer image or enter the product name manually.')}</p></div>`;
+    } finally {
+        IMAGE_SEARCH_STATE.isProcessing = false;
+        APP_STATE.isSearching = false;
+        if (loadingSpinner) loadingSpinner.classList.remove('active');
+        updateLastUpdated();
+    }
+}
+
+// ============ SMART SEARCH (URL vs keyword vs image) ============
 function handleSmartSearch() {
+    if (IMAGE_SEARCH_STATE.file) return searchByImage();
+
     const value = document.getElementById('mainSearch').value.trim();
     if (!value) {
-        showNotification('Please enter a product name or URL', 'error');
+        showNotification('Please enter a product name, model, or what you are looking for.', 'error');
         return;
     }
     const isURL = /^https?:\/\//i.test(value) || /^www\./i.test(value) || /\.(com|bd|net|org)(\/|$)/i.test(value);
-    if (isURL) {
-        searchByUrlFromInput(normalizeProductUrl(value));
-    } else {
-        performSearch();
-    }
+    if (isURL) searchByUrlFromInput(normalizeProductUrl(value));
+    else performSearch();
 }
+
+// ============ IMAGE UPLOAD + CLIPBOARD PASTE ============
+document.addEventListener('DOMContentLoaded', () => {
+    const imageInput = document.getElementById('imageSearchInput');
+    if (imageInput) imageInput.addEventListener('change', event => {
+        const file = event.target.files?.[0];
+        if (file) setImageSearchFile(file);
+    });
+
+    const searchInput = document.getElementById('mainSearch');
+    if (searchInput) searchInput.addEventListener('paste', event => {
+        const items = Array.from(event.clipboardData?.items || []);
+        const imageItem = items.find(item => item.type.startsWith('image/'));
+        if (!imageItem) return;
+        const file = imageItem.getAsFile();
+        if (!file) return;
+        event.preventDefault();
+        setImageSearchFile(file);
+        showNotification('Image pasted. Click Search to compare prices.', 'success');
+    });
+});
 
 // ============ STORE SLIDER NAVIGATION ============
 function slideStores(direction) {
