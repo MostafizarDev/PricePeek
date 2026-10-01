@@ -2975,3 +2975,75 @@ body.dark{background:radial-gradient(circle at 50% -10%,rgba(99,102,241,.13),tra
     .footer-social-btn{width:32px;height:32px}
     .footer-social-heading{margin-top:12px;margin-bottom:8px}
 }
+
+/* ============ FOOTER SHARE BUTTONS — FINAL ============ */
+.footer-social{
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:0;
+}
+.footer-social-btn{
+    width:32px;
+    height:32px;
+    min-width:32px;
+    flex:0 0 32px;
+    padding:0 !important;
+    margin:0;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    border:1px solid rgba(148,163,184,.24);
+    border-radius:8px;
+    background:rgba(255,255,255,.06);
+    color:#cbd5e1;
+    cursor:pointer;
+    line-height:1;
+    appearance:none;
+    -webkit-appearance:none;
+    transition:transform .18s ease,background .18s ease,border-color .18s ease,color .18s ease,box-shadow .18s ease;
+}
+.footer-social-btn svg{
+    display:block !important;
+    width:16px !important;
+    height:16px !important;
+    min-width:16px !important;
+    min-height:16px !important;
+    max-width:16px !important;
+    max-height:16px !important;
+    flex:0 0 16px;
+}
+.footer-social-btn:hover{
+    transform:translateY(-1px);
+    color:#fff;
+    border-color:rgba(255,255,255,.28);
+    box-shadow:0 5px 14px rgba(0,0,0,.16);
+}
+.footer-social-btn:active{
+    transform:scale(.96);
+}
+.footer-social-btn[data-share="facebook"]:hover{background:#1877f2;border-color:#1877f2;}
+.footer-social-btn[data-share="whatsapp"]:hover{background:#16a34a;border-color:#16a34a;}
+.footer-social-btn[data-share="messenger"]:hover{background:#0084ff;border-color:#0084ff;}
+.footer-social-btn[data-share="telegram"]:hover{background:#229ed9;border-color:#229ed9;}
+.footer-social-btn[data-share="copy"]:hover{background:#4f46e5;border-color:#4f46e5;}
+@media(max-width:520px){
+    .footer-social{gap:7px;}
+    .footer-social-btn{
+        width:31px;
+        height:31px;
+        min-width:31px;
+        flex-basis:31px;
+    }
+    .footer-social-btn svg{
+        width:15px !important;
+        height:15px !important;
+        min-width:15px !important;
+        min-height:15px !important;
+        max-width:15px !important;
+        max-height:15px !important;
+        flex-basis:15px;
+    }
+}
