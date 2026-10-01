@@ -809,21 +809,45 @@ function toggleWishlistDrawer() {
     drawer.classList.toggle('active');
     renderWishlistDrawer();
 }
+function getSafeProductUrl(url) {
+    const value = String(url || '').trim();
+    if (!value) return '';
+    try {
+        const parsed = new URL(value, window.location.origin);
+        if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return '';
+        return parsed.href;
+    } catch {
+        return '';
+    }
+}
+
 function renderWishlistDrawer() {
     const body = document.getElementById('wishlistBody');
     if (APP_STATE.wishlist.length === 0) {
         body.innerHTML = '<p style="color:#9CA3AF; text-align:center; padding:40px 0;">No items in wishlist yet.<br>Click the heart icon to add products.</p>';
     } else {
-        body.innerHTML = APP_STATE.wishlist.map((product, index) => `
-            <div style="padding:12px; border:1px solid #E5E7EB; border-radius:8px; margin-bottom:8px; display:flex; gap:12px; align-items:center;">
-                <div style="font-size:40px; width:50px; text-align:center;">📦</div>
-                <div style="flex:1; min-width:0;">
-                    <div style="font-weight:600; font-size:13px; overflow:hidden; text-overflow:ellipsis;">${product.name}</div>
-                    <div style="color:#6B7280; font-size:12px;">${product.marketplace} • ${formatPrice(product.price)}</div>
-                    <div style="font-size:10px; color:#9CA3AF;">Saved: ${new Date(product.savedAt).toLocaleDateString()}</div>
+        body.innerHTML = APP_STATE.wishlist.map((product, index) => {
+            const productUrl = getSafeProductUrl(product.url);
+            const productName = escapeHTML(product.name || 'Unknown Product');
+            const marketplace = escapeHTML(product.marketplace || 'Store');
+            const price = formatBDT(product.price);
+            const savedDate = product.savedAt ? new Date(product.savedAt).toLocaleDateString() : '';
+            const productLink = productUrl
+                ? `<a href="${escapeHTML(productUrl)}" target="_blank" rel="noopener noreferrer" class="wishlist-product-link" aria-label="Open ${productName} on ${marketplace}">${productName}</a>`
+                : `<span class="wishlist-product-link wishlist-product-link-disabled">${productName}</span>`;
+
+            return `
+            <div class="wishlist-item">
+                <div class="wishlist-item-icon">📦</div>
+                <div class="wishlist-item-info">
+                    ${productLink}
+                    <div class="wishlist-item-meta">${marketplace} • ${price}</div>
+                    ${savedDate ? `<div class="wishlist-item-date">Saved: ${savedDate}</div>` : ''}
+                    ${productUrl ? `<a href="${escapeHTML(productUrl)}" target="_blank" rel="noopener noreferrer" class="wishlist-open-link">View Product ↗</a>` : '<span class="wishlist-open-link wishlist-open-link-disabled">Product link unavailable</span>'}
                 </div>
-                <button onclick="removeFromWishlist(${index})" style="background:none; border:none; cursor:pointer; font-size:18px; color:#EF4444;">🗑️</button>
-            </div>`).join('');
+                <button onclick="removeFromWishlist(${index})" class="wishlist-remove-btn" aria-label="Remove from wishlist" title="Remove from wishlist">🗑️</button>
+            </div>`;
+        }).join('');
     }
 }
 function removeFromWishlist(index) {
