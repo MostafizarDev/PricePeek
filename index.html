@@ -57,6 +57,8 @@
                 </div>
             </div>
 
+            <div class="image-search-hint" id="imageSearchHint">📷 Search by image: upload a product image or paste an image with <strong>Ctrl + V</strong></div>
+
             <div class="quick-suggestions" id="quickSuggestions">
                 <span class="suggestion-chip" onclick="quickSearch('iPhone 15 Pro Max')">iPhone 15 Pro Max</span>
                 <span class="suggestion-chip" onclick="quickSearch('Samsung 55 Inch TV')">Samsung 55" TV</span>
@@ -243,6 +245,7 @@
 
     <!-- Scripts -->
     <script src="js/utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="js/scrapers.js"></script>
     <script src="js/app.js"></script>
 </body>
