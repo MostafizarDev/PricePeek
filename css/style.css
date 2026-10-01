@@ -2522,3 +2522,44 @@ body.dark{background:radial-gradient(circle at 50% -10%,rgba(99,102,241,.13),tra
         width:calc(100% - 20px) !important;
     }
 }
+
+
+/* ============ RESULT SEARCH: VIEWPORT CENTER ============ */
+/* The result-page hero must span the viewport so the search block is
+   centered to the actual screen, not to the narrower results column. */
+.result-view-active .hero-section{
+    width:100vw !important;
+    max-width:none !important;
+    box-sizing:border-box !important;
+    margin-left:calc(50% - 50vw) !important;
+    margin-right:0 !important;
+    left:auto !important;
+    transform:none !important;
+}
+
+.result-view-active .result-search-intro{
+    position:static !important;
+    width:min(760px, calc(100% - 32px)) !important;
+    max-width:760px !important;
+    margin:2px auto 12px !important;
+    transform:none !important;
+}
+
+.result-view-active .hero-section .search-wrapper{
+    position:static !important;
+    width:min(760px, calc(100% - 32px)) !important;
+    max-width:760px !important;
+    margin:0 auto !important;
+    transform:none !important;
+}
+
+@media(max-width:700px){
+    .result-view-active .hero-section{
+        width:100vw !important;
+        margin-left:calc(50% - 50vw) !important;
+    }
+    .result-view-active .result-search-intro,
+    .result-view-active .hero-section .search-wrapper{
+        width:calc(100% - 20px) !important;
+    }
+}
