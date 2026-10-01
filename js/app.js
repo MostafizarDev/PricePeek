@@ -405,9 +405,9 @@ async function searchByImage() {
             if (productGrid) {
                 productGrid.innerHTML = '<div class="error-state" style="grid-column:1/-1;">' +
                     '<div style="font-size:48px;">📷</div>' +
-                    '<h3>We couldn\\'t find this product</h3>' +
+                    '<h3>We couldn\'t find this product</h3>' +
                     '<p>Detected <strong>' + escapeHTML(query) + '</strong>. Edit the search text above and try again if the OCR/visual result needs correction.</p>' +
-                    '<button class="retry-btn" type="button" onclick="document.getElementById(\\'mainSearch\\').focus()">Edit Search</button>' +
+                    '<button class="retry-btn" type="button" onclick="document.getElementById(\'mainSearch\').focus()">Edit Search</button>' +
                     '</div>';
             }
         }
@@ -424,7 +424,7 @@ async function searchByImage() {
                 '<div style="font-size:48px;">📷</div>' +
                 '<h3>Image search needs a little more information</h3>' +
                 '<p>' + escapeHTML(error.message || 'Please try another product image or screenshot.') + '</p>' +
-                '<button class="retry-btn" type="button" onclick="document.getElementById(\\'mainSearch\\').focus()">Edit Search</button>' +
+                '<button class="retry-btn" type="button" onclick="document.getElementById(\'mainSearch\').focus()">Edit Search</button>' +
                 '</div>';
         }
     } finally {
