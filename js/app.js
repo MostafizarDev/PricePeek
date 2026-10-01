@@ -454,6 +454,18 @@ function handleSmartSearch() {
     else performSearch();
 }
 
+// ============ GLOBAL SEARCH SHORTCUT ============
+document.addEventListener('keydown', event => {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        const input = document.getElementById('mainSearch');
+        if (input) {
+            input.focus();
+            input.select();
+        }
+    }
+});
+
 // ============ IMAGE UPLOAD + CLIPBOARD PASTE ============
 document.addEventListener('DOMContentLoaded', () => {
     const imageInput = document.getElementById('imageSearchInput');
