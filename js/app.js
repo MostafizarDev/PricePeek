@@ -210,36 +210,49 @@ async function imageToSearchQuery(file) {
 
 async function searchByImage() {
     if (!IMAGE_SEARCH_STATE.file || IMAGE_SEARCH_STATE.isProcessing || APP_STATE.isSearching) return;
+
     IMAGE_SEARCH_STATE.isProcessing = true;
     const file = IMAGE_SEARCH_STATE.file;
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const loadingText = document.getElementById('loadingText');
+    const productGrid = document.getElementById('productGrid');
+
     APP_STATE.lastSearchQuery = '[Image Search]';
     APP_STATE.isSearching = true;
     enterResultView();
 
-    const loadingSpinner = document.getElementById('loadingSpinner');
-    const loadingText = document.getElementById('loadingText');
-    const productGrid = document.getElementById('productGrid');
     if (loadingSpinner) loadingSpinner.classList.add('active');
     if (loadingText) loadingText.textContent = 'Reading product image...';
     if (productGrid) productGrid.innerHTML = '';
 
     try {
         const query = await imageToSearchQuery(file);
-        document.getElementById('mainSearch').value = query;
+        const searchInput = document.getElementById('mainSearch');
+        if (searchInput) searchInput.value = query;
         APP_STATE.lastSearchQuery = query;
-        if (loadingText) loadingText.textContent = 'Searching supported stores...';
-        const { products } = await scraperManager.searchAll(query);
 
-        if (!products || products.length === 0) {
-            productGrid.innerHTML = `<div class="error-state" style="grid-column:1/-1;"><div style="font-size:48px;">📷</div><h3>No products found from this image</h3><p>We could read the image, but supported stores did not return a matching product. You can edit the search text and search again.</p></div>`;
-        } else {
-            APP_STATE.allProducts = products;
-            APP_STATE.currentFilter = 'all';
-            applyFiltersAndSort();
-        }
+        // Convert the image result into the normal PricePeek search flow.
+        // This keeps product counts, filters, sorting, matching and result cards consistent.
+        IMAGE_SEARCH_STATE.file = null;
+        if (IMAGE_SEARCH_STATE.objectUrl) URL.revokeObjectURL(IMAGE_SEARCH_STATE.objectUrl);
+        IMAGE_SEARCH_STATE.objectUrl = '';
+        const imageInput = document.getElementById('imageSearchInput');
+        if (imageInput) imageInput.value = '';
+        const hint = document.getElementById('imageSearchHint');
+        if (hint) hint.innerHTML = '📷 Image text detected. You can edit the search text and search again.';
+
+        APP_STATE.isSearching = false;
+        await performSearch();
     } catch (error) {
         console.error('Image search error:', error);
-        productGrid.innerHTML = `<div class="error-state" style="grid-column:1/-1;"><div style="font-size:48px;">📷</div><h3>We couldn't identify this product</h3><p>${escapeHTML(error.message || 'Try a clearer image or enter the product name manually.')}</p></div>`;
+        if (productGrid) {
+            productGrid.innerHTML = `<div class="error-state" style="grid-column:1/-1;">
+                <div style="font-size:48px;">📷</div>
+                <h3>We couldn't read this product image</h3>
+                <p>${escapeHTML(error.message || 'Try a clearer product image or screenshot.')}</p>
+                <button class="retry-btn" type="button" onclick="document.getElementById('mainSearch').focus()">Edit Search</button>
+            </div>`;
+        }
     } finally {
         IMAGE_SEARCH_STATE.isProcessing = false;
         APP_STATE.isSearching = false;
