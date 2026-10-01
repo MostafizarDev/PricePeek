@@ -199,44 +199,57 @@ function setImageSearchFile(file) {
     }
 }
 
-async function imageToSearchQuery(file) {
-    if (!window.Tesseract) throw new Error('Image search engine is still loading. Please try again.');
+async function fileToDataUrl(file, maxSide = 1600, quality = 0.82) {
+    const sourceUrl = URL.createObjectURL(file);
+    try {
+        const image = await new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = () => reject(new Error('Could not read the selected image.'));
+            img.src = sourceUrl;
+        });
 
-    const result = await Tesseract.recognize(file, 'eng', {
-        logger: message => {
-            if (message?.status === 'recognizing text' && Number.isFinite(message.progress)) {
-                const loadingText = document.getElementById('loadingText');
-                if (loadingText) loadingText.textContent = `Reading product image... ${Math.round(message.progress * 100)}%`;
-            }
-        }
+        const scale = Math.min(1, maxSide / Math.max(image.naturalWidth || image.width, image.naturalHeight || image.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round((image.naturalWidth || image.width) * scale));
+        canvas.height = Math.max(1, Math.round((image.naturalHeight || image.height) * scale));
+
+        const ctx = canvas.getContext('2d', { alpha: false });
+        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+        return canvas.toDataURL('image/jpeg', quality);
+    } finally {
+        URL.revokeObjectURL(sourceUrl);
+    }
+}
+
+async function imageToSearchQuery(file) {
+    const image = await fileToDataUrl(file);
+    const response = await fetch('/api/image-search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image }),
     });
 
-    const raw = String(result?.data?.text || '')
-        .replace(/[|\\{}[\]<>]/g, ' ')
-        .replace(/[®©™]/g, ' ')
-        .replace(/\s+/g, ' ')
+    const text = await response.text();
+    let data = null;
+    try { data = text ? JSON.parse(text) : null; } catch {}
+
+    if (!response.ok) {
+        throw new Error(data?.error || 'Visual product analysis failed.');
+    }
+
+    const query = String(data?.searchQuery || data?.productName || '')
+        .replace(/[\\r\\n]+/g, ' ')
+        .replace(/\\s+/g, ' ')
         .trim();
 
-    if (!raw) throw new Error('No readable product text was found in this image. Try a clearer product photo or screenshot.');
-
-    const noise = new Set([
-        'daraz','mall','official','store','shop','buy','cart','wishlist','share',
-        'home','search','login','sign','delivery','free','price','reviews','review',
-        'rating','sold','stock','quantity','select','color','size','description',
-        'specification','specifications','add','to','the','and','for'
-    ]);
-
-    const tokens = raw.split(/\s+/)
-        .map(token => token.replace(/^[^a-z0-9]+|[^a-z0-9%.-]+$/gi, ''))
-        .filter(Boolean)
-        .filter(token => !noise.has(token.toLowerCase()))
-        .filter(token => token.length >= 2 || /^\d+(?:\.\d+)?w?$/i.test(token))
-        .filter(token => !/^[a-z]$/i.test(token))
-        .filter((token, index, arr) => arr.findIndex(x => x.toLowerCase() === token.toLowerCase()) === index);
-
-    const focused = tokens.slice(0, 10).join(' ').trim();
-    if (!focused) throw new Error('The image does not contain enough readable product information. Try a clearer product image or screenshot.');
-    return focused.slice(0, 120);
+    if (!query) throw new Error('The image did not contain enough reliable product information.');
+    return {
+        query: query.slice(0, 120),
+        productName: String(data?.productName || query).trim().slice(0, 120),
+        confidence: data?.confidence,
+    };
 }
 
 async function searchByImage() {
@@ -253,62 +266,27 @@ async function searchByImage() {
     enterResultView();
 
     if (loadingSpinner) loadingSpinner.classList.add('active');
-    if (loadingText) loadingText.textContent = 'Reading product image...';
+    if (loadingText) loadingText.textContent = 'Analyzing product image...';
     if (productGrid) productGrid.innerHTML = '';
 
     try {
-        const query = await imageToSearchQuery(file);
+        const identification = await imageToSearchQuery(file);
+        const query = identification.query;
         const searchInput = document.getElementById('mainSearch');
+
+        // Only the clean visual+OCR product query goes into the search box.
         if (searchInput) searchInput.value = query;
         APP_STATE.lastSearchQuery = query;
 
-        const terms = query.split(/\s+/)
-            .map(token => token.replace(/^[^a-z0-9]+|[^a-z0-9%.-]+$/gi, ''))
-            .filter(Boolean);
+        if (loadingText) loadingText.textContent = 'Searching supported stores...';
+        const data = await scraperManager.searchAll(query);
+        const products = Array.isArray(data?.products) ? data.products : [];
 
-        const ignoredImageTerms = new Set([
-            'daraz','mall','official','store','shop','buy','cart','wishlist','share',
-            'home','search','login','sign','delivery','free','price','reviews','review',
-            'rating','sold','stock','quantity','select','color','size','description',
-            'specification','specifications','add','to','the','and','for','with'
-        ]);
-
-        const cleanTerms = terms.filter(token =>
-            token.length > 1 && !ignoredImageTerms.has(token.toLowerCase())
-        );
-
-        // Image OCR is often imperfect. Search several progressively cleaner
-        // queries instead of sending the entire OCR sentence to marketplaces.
-        const candidates = [
-            cleanTerms.slice(0, 2).join(' '),
-            cleanTerms.slice(0, 3).join(' '),
-            cleanTerms.slice(0, 4).join(' '),
-            cleanTerms.slice(0, 6).join(' '),
-            cleanTerms.slice(0, 8).join(' '),
-            query
-        ].filter((value, index, arr) => value && arr.indexOf(value) === index);
-
-        let data = { products: [], errors: [] };
-
-        for (let i = 0; i < candidates.length; i++) {
-            if (loadingText) loadingText.textContent = i === 0
-                ? 'Searching supported stores...'
-                : `Trying a broader product search... ${i + 1}/${candidates.length}`;
-
-            data = await scraperManager.searchAll(candidates[i]);
-
-            if (Array.isArray(data.products) && data.products.length > 0) {
-                APP_STATE.lastSearchQuery = candidates[i];
-                if (searchInput) searchInput.value = candidates[i];
-                break;
-            }
-        }
-
-        const products = Array.isArray(data.products) ? data.products : [];
         APP_STATE.allProducts = products;
         APP_STATE.filteredProducts = [];
 
         const resultsCount = document.getElementById('resultsCount');
+
         if (products.length > 0) {
             APP_STATE.currentFilter = 'all';
             applyFiltersAndSort();
@@ -316,25 +294,31 @@ async function searchByImage() {
             if (resultsCount) resultsCount.textContent = 'Found 0 products';
             const queryEl = document.getElementById('resultsQuery');
             if (queryEl) queryEl.textContent = `No matching products for “${query}”`;
-            if (productGrid) productGrid.innerHTML = `<div class="error-state" style="grid-column:1/-1;">
+            if (productGrid) {
+                productGrid.innerHTML = `<div class="error-state" style="grid-column:1/-1;">
+                    <div style="font-size:48px;">📷</div>
+                    <h3>We couldn't find this product</h3>
+                    <p>Visual + text analysis identified <strong>${escapeHTML(query)}</strong>, but supported stores did not return a matching product. You can edit the search text and try again.</p>
+                    <button class="retry-btn" type="button" onclick="document.getElementById('mainSearch').focus()">Edit Search</button>
+                </div>`;
+            }
+        }
+    } catch (error) {
+        console.error('Visual image search error:', error);
+        APP_STATE.allProducts = [];
+        APP_STATE.filteredProducts = [];
+
+        const resultsCount = document.getElementById('resultsCount');
+        if (resultsCount) resultsCount.textContent = 'Found 0 products';
+
+        if (productGrid) {
+            productGrid.innerHTML = `<div class="error-state" style="grid-column:1/-1;">
                 <div style="font-size:48px;">📷</div>
-                <h3>We couldn't find this product</h3>
-                <p>The image text was readable, but supported stores did not return a matching product. Try editing the search text to the product name or model number.</p>
+                <h3>Image search needs a little more information</h3>
+                <p>${escapeHTML(error.message || 'Please try another product image or screenshot.')}</p>
                 <button class="retry-btn" type="button" onclick="document.getElementById('mainSearch').focus()">Edit Search</button>
             </div>`;
         }
-    } catch (error) {
-        console.error('Image search error:', error);
-        APP_STATE.allProducts = [];
-        APP_STATE.filteredProducts = [];
-        const resultsCount = document.getElementById('resultsCount');
-        if (resultsCount) resultsCount.textContent = 'Found 0 products';
-        if (productGrid) productGrid.innerHTML = `<div class="error-state" style="grid-column:1/-1;">
-            <div style="font-size:48px;">📷</div>
-            <h3>We couldn't read this product image</h3>
-            <p>${escapeHTML(error.message || 'Try a clearer product image or screenshot.')}</p>
-            <button class="retry-btn" type="button" onclick="document.getElementById('mainSearch').focus()">Edit Search</button>
-        </div>`;
     } finally {
         IMAGE_SEARCH_STATE.file = null;
         if (IMAGE_SEARCH_STATE.objectUrl) URL.revokeObjectURL(IMAGE_SEARCH_STATE.objectUrl);
@@ -342,7 +326,7 @@ async function searchByImage() {
         const imageInput = document.getElementById('imageSearchInput');
         if (imageInput) imageInput.value = '';
         const hint = document.getElementById('imageSearchHint');
-        if (hint) hint.innerHTML = '📷 Image text detected. You can edit the search text and search again.';
+        if (hint) hint.innerHTML = '📷 Search by image: upload a product image or paste an image with <strong>Ctrl + V</strong>';
         IMAGE_SEARCH_STATE.isProcessing = false;
         APP_STATE.isSearching = false;
         if (loadingSpinner) loadingSpinner.classList.remove('active');
