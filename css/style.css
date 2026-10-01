@@ -3365,3 +3365,116 @@ body.dark{background:radial-gradient(circle at 50% -10%,rgba(99,102,241,.13),tra
 .best-deals-page .results-section.active .results-actions .sort-select{
     margin:0 !important;
 }
+
+
+/* ============ WISHLIST PRODUCT LINKS ============ */
+.wishlist-item{
+    padding:12px;
+    border:1px solid #E5E7EB;
+    border-radius:10px;
+    margin-bottom:8px;
+    display:flex;
+    gap:12px;
+    align-items:center;
+    background:var(--white,#fff);
+}
+.wishlist-item-icon{
+    flex:0 0 50px;
+    width:50px;
+    height:50px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:34px;
+    border-radius:8px;
+    background:#F8FAFC;
+}
+.wishlist-item-info{
+    flex:1;
+    min-width:0;
+}
+.wishlist-product-link{
+    display:block;
+    color:#101828;
+    font-weight:700;
+    font-size:13px;
+    line-height:1.35;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    text-decoration:none;
+}
+.wishlist-product-link:hover{
+    color:#4F46E5;
+    text-decoration:underline;
+}
+.wishlist-product-link-disabled{
+    cursor:default;
+}
+.wishlist-item-meta{
+    color:#6B7280;
+    font-size:12px;
+    margin-top:3px;
+}
+.wishlist-item-date{
+    color:#9CA3AF;
+    font-size:10px;
+    margin-top:2px;
+}
+.wishlist-open-link{
+    display:inline-block;
+    margin-top:6px;
+    color:#4F46E5;
+    font-size:11px;
+    font-weight:700;
+    text-decoration:none;
+}
+.wishlist-open-link:hover{
+    text-decoration:underline;
+}
+.wishlist-open-link-disabled{
+    color:#98A2B3;
+    cursor:default;
+}
+.wishlist-remove-btn{
+    flex:0 0 32px;
+    width:32px;
+    height:32px;
+    background:transparent;
+    border:0;
+    border-radius:7px;
+    cursor:pointer;
+    font-size:17px;
+    color:#EF4444;
+}
+.wishlist-remove-btn:hover{
+    background:#FEF2F2;
+}
+.dark .wishlist-item{
+    border-color:#273449;
+    background:#111827;
+}
+.dark .wishlist-item-icon{
+    background:#1F2937;
+}
+.dark .wishlist-product-link{
+    color:#F8FAFC;
+}
+.dark .wishlist-product-link:hover,
+.dark .wishlist-open-link{
+    color:#A5B4FC;
+}
+.dark .wishlist-item-meta{
+    color:#94A3B8;
+}
+.dark .wishlist-item-date{
+    color:#64748B;
+}
+.dark .wishlist-remove-btn:hover{
+    background:#2A1518;
+}
+@media(max-width:520px){
+    .wishlist-item{gap:8px;padding:10px;}
+    .wishlist-item-icon{flex-basis:42px;width:42px;height:42px;font-size:28px;}
+    .wishlist-product-link{font-size:12px;}
+}
