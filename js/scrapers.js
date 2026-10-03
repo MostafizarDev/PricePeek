@@ -10,15 +10,17 @@ class PricePeekAPI {
         signal: controller.signal,
         cache: 'no-store'
       });
+
       const text = await response.text();
       let data = null;
       try { data = text ? JSON.parse(text) : null; }
-      catch { throw new Error('PricePeek API returned an invalid response.'); }
+      catch { throw new Error('Marketplace API returned an invalid response.'); }
 
       if (!response.ok) {
         const message = data?.error || data?.message || `Request failed (${response.status})`;
         throw new Error(message);
       }
+
       return data || {};
     } finally {
       clearTimeout(timer);
@@ -29,6 +31,7 @@ class PricePeekAPI {
     const stores = [
       'daraz',
       'startech',
+      'applegadgets',
       'ryans',
       'rokomari',
       'pickaboo',
@@ -39,7 +42,6 @@ class PricePeekAPI {
       'bagdoom',
       'sumashtech',
       'dazzle',
-      'applegadgets',
       'shajgoj',
       'chaldal'
     ];
@@ -48,8 +50,9 @@ class PricePeekAPI {
     const errors = [];
     const sources = [];
 
-    // Query stores in small batches. Each store is its own Vercel Function,
-    // so one broken/slow marketplace can never make the whole search endpoint 504.
+    // Every marketplace has its own Vercel Function.
+    // A new scraper can therefore be developed/tested without touching
+    // the existing working Daraz, StarTech, or Apple Gadgets scrapers.
     const batchSize = 5;
 
     for (let start = 0; start < stores.length; start += batchSize) {
@@ -59,7 +62,7 @@ class PricePeekAPI {
         batch.map(async store => {
           try {
             return await this.request(
-              `/api/store-search?store=${encodeURIComponent(store)}&q=${encodeURIComponent(query)}`,
+              `/api/stores/${encodeURIComponent(store)}?q=${encodeURIComponent(query)}`,
               { timeoutMs: 6500 }
             );
           } catch (error) {
@@ -84,7 +87,6 @@ class PricePeekAPI {
       }
     }
 
-    // Remove exact duplicate listings while keeping the original store URL.
     const seen = new Set();
     const uniqueProducts = products.filter(product => {
       const key = [
@@ -97,11 +99,13 @@ class PricePeekAPI {
       if (!product.name || !product.url || !Number.isFinite(Number(product.price)) || seen.has(key)) {
         return false;
       }
+
       seen.add(key);
       return true;
     });
 
     const tokens = String(query).toLowerCase().split(/\s+/).filter(Boolean);
+
     uniqueProducts.sort((a, b) => {
       const score = product => {
         const name = String(product.name || '').toLowerCase();
@@ -109,6 +113,7 @@ class PricePeekAPI {
           ? tokens.filter(token => name.includes(token)).length / tokens.length
           : 0;
       };
+
       return score(b) - score(a) || Number(a.price) - Number(b.price);
     });
 
@@ -129,9 +134,12 @@ class PricePeekAPI {
       return await this.request(`/api/search?url=${encodeURIComponent(url)}`, { timeoutMs: 15000 });
     } catch (error) {
       return {
-        products: [], productGroups: [], deals: [],
+        products: [],
+        productGroups: [],
+        deals: [],
         errors: [{ marketplace: 'PricePeekBD', error: error.message || 'URL search failed' }],
-        sourceProduct: null, storeStatus: []
+        sourceProduct: null,
+        storeStatus: []
       };
     }
   }
