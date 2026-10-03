@@ -3,9 +3,6 @@ name: PricePeekBD Crawler
 on:
   workflow_dispatch:
   schedule:
-    # GitHub cron cannot express a continuous 5-hour cycle across a 24-hour day.
-    # These five runs keep the crawler approximately every 5 hours; the daily
-    # reset creates one shorter overnight gap.
     - cron: '17 0,5,10,15,20 * * *'
 
 concurrency:
@@ -15,7 +12,7 @@ concurrency:
 jobs:
   crawl:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 90
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -32,6 +29,11 @@ jobs:
         env:
           SHEETS_WEB_APP_URL: ${{ secrets.SHEETS_WEB_APP_URL }}
           CRAWLER_TOKEN: ${{ secrets.CRAWLER_TOKEN }}
-          CRAWL_TIMEOUT_MS: 15000
-          STORE_CONCURRENCY: 3
+          STORE_TIMEOUT_MS: 480000
+          STORE_CONCURRENCY: 5
+          CATALOG_CONCURRENCY: 8
+          MAX_CATALOG_URLS_PER_STORE: 10000
+          MAX_SITEMAPS_PER_STORE: 200
+          MAX_PRODUCTS_PER_STORE: 10000
+          UPLOAD_BATCH_SIZE: 500
         run: node crawler/run.js
