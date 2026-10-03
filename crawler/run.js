@@ -180,14 +180,14 @@ async function main() {
       result.error || ''
     );
 
-    // Never overwrite a healthy store with an empty failed crawl.
-    if (result.ok) {
-      try {
-        await pushStoreResult(result);
-        uploaded++;
-      } catch (error) {
-        console.error('[' + result.marketplace + '] sheet update failed:', error.message);
-      }
+    // Upload success or failure status. Failed crawls never delete/overwrite
+    // existing product rows because the Sheets endpoint only upserts products
+    // when the crawl contains valid products.
+    try {
+      await pushStoreResult(result);
+      uploaded++;
+    } catch (error) {
+      console.error('[' + result.marketplace + '] sheet update failed:', error.message);
     }
   }
 
