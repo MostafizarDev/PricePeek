@@ -2,6 +2,12 @@ name: PricePeekBD Crawler
 
 on:
   workflow_dispatch:
+    inputs:
+      full_crawl:
+        description: "Force a complete catalog crawl for every store"
+        required: false
+        default: "false"
+        type: boolean
   schedule:
     - cron: '17 0,5,10,15,20 * * *'
 
@@ -12,7 +18,7 @@ concurrency:
 jobs:
   crawl:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 360
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -22,6 +28,14 @@ jobs:
         with:
           node-version: 22
 
+      - name: Restore catalog manifest cache
+        uses: actions/cache@v4
+        with:
+          path: crawler/.catalog-cache
+          key: pricepeek-catalog-v2-${{ github.run_id }}
+          restore-keys: |
+            pricepeek-catalog-v2-
+
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
@@ -29,11 +43,16 @@ jobs:
         env:
           SHEETS_WEB_APP_URL: ${{ secrets.SHEETS_WEB_APP_URL }}
           CRAWLER_TOKEN: ${{ secrets.CRAWLER_TOKEN }}
-          STORE_TIMEOUT_MS: 480000
-          STORE_CONCURRENCY: 5
-          CATALOG_CONCURRENCY: 8
-          MAX_CATALOG_URLS_PER_STORE: 10000
-          MAX_SITEMAPS_PER_STORE: 200
-          MAX_PRODUCTS_PER_STORE: 10000
+          FORCE_FULL_CRAWL: ${{ github.event.inputs.full_crawl || 'false' }}
+          STORE_TIMEOUT_MS: 1800000
+          STORE_CONCURRENCY: 4
+          CATALOG_CONCURRENCY: 16
+          MAX_DISCOVERED_URLS_PER_STORE: 250000
+          MAX_CATALOG_URLS_PER_STORE: 100000
+          MAX_SITEMAPS_PER_STORE: 500
+          MAX_CATEGORY_PAGES_PER_STORE: 5000
+          MAX_PRODUCTS_PER_STORE: 100000
           UPLOAD_BATCH_SIZE: 500
+          PRICE_REFRESH_ROTATION_SLOTS: 12
+          SHEET_RECONCILE_MISSING: false
         run: node crawler/run.js
