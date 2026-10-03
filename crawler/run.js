@@ -113,7 +113,7 @@ async function runStore(store) {
       console.warn('[' + store.name + '] catalog crawl failed:', error.message);
     }
 
-    if (!products.length && full) {
+    if (!products.length) {
       stats.mode = 'seed-search-fallback';
       products = await runSeedSearch(scraper, store);
       stats.parsedProducts = products.length;
