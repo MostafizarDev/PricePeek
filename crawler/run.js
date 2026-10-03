@@ -250,6 +250,7 @@ async function pushStoreResult(result) {
       selectedUrls: result.selectedUrls,
       parsedProducts: result.parsedProducts,
       startedAt: result.startedAt,
+      dataFileId: result.dataFileId || '',
       crawledAt: new Date().toISOString(),
       ok: true
     }
