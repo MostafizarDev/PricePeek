@@ -114,6 +114,22 @@ function upsertStore(store, products) {
 
     const rowNumber = existing.get(id);
     if (rowNumber) {
+      const previous = rows[rowNumber - 1];
+      const previousPrice = Number(previous[index.price]);
+      const nextPrice = Number(values[index.price]);
+
+      if (Number.isFinite(previousPrice) && Number.isFinite(nextPrice) && previousPrice !== nextPrice) {
+        historyRows.push([
+          store.id || '',
+          store.name || '',
+          id,
+          values[index.name] || '',
+          previousPrice,
+          nextPrice,
+          now
+        ]);
+      }
+
       sheet.getRange(rowNumber, 1, 1, CONFIG.HEADER.length).setValues([values]);
       updated++;
     } else {
@@ -122,6 +138,7 @@ function upsertStore(store, products) {
     }
   }
 
+  appendPriceHistory(historyRows);
   updateStoresSheet(store, limited.length, now, null);
 
   return {
@@ -132,6 +149,29 @@ function upsertStore(store, products) {
     received: limited.length,
     updatedAt: now
   };
+}
+
+function appendPriceHistory(historyRows) {
+  if (!historyRows.length) return;
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName('PriceHistory');
+
+  if (!sheet) {
+    sheet = ss.insertSheet('PriceHistory');
+    sheet.getRange(1, 1, 1, 7).setValues([[
+      'store_id', 'store_name', 'product_id', 'product_name',
+      'old_price', 'new_price', 'changed_at'
+    ]]);
+    sheet.setFrozenRows(1);
+  }
+
+  sheet.getRange(
+    sheet.getLastRow() + 1,
+    1,
+    historyRows.length,
+    7
+  ).setValues(historyRows);
 }
 
 function updateStoresSheet(store, productCount, timestamp, error) {
