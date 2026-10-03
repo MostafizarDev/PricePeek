@@ -79,9 +79,14 @@ function storesSheet() {
   let sheet = ss.getSheetByName('Stores');
   if (!sheet) {
     sheet = ss.insertSheet('Stores');
-    sheet.getRange(1, 1, 1, CONFIG.STORE_HEADER.length).setValues([CONFIG.STORE_HEADER]);
-    sheet.setFrozenRows(1);
   }
+  const currentHeader = sheet.getLastColumn() > 0
+    ? sheet.getRange(1, 1, 1, Math.min(sheet.getLastColumn(), CONFIG.STORE_HEADER.length)).getValues()[0]
+    : [];
+  if (currentHeader.join('|') !== CONFIG.STORE_HEADER.join('|')) {
+    sheet.getRange(1, 1, 1, CONFIG.STORE_HEADER.length).setValues([CONFIG.STORE_HEADER]);
+  }
+  sheet.setFrozenRows(1);
   return sheet;
 }
 
