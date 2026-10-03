@@ -27,7 +27,7 @@ class PricePeekAPI {
   }
 
   async searchAll(query) {
-    return this.request(`/api/search?q=${encodeURIComponent(query)}`, { timeoutMs: 12000 });
+    return this.request(`/api/search?q=${encodeURIComponent(query)}`, { timeoutMs: 30000 });
   }
 
   async searchByUrl(url) {
