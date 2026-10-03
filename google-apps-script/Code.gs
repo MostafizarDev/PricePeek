@@ -186,7 +186,9 @@ function writeInChunks(sheet, rows, chunk, startRow) {
 
 function stageStore(store, runId, products) {
   if (!store.id || !runId) throw new Error('store.id and runId are required');
-  const db = ensureStoreDatabase(store);
+  const db = store.dataFileId
+    ? { ss: SpreadsheetApp.openById(String(store.dataFileId)) }
+    : ensureStoreDatabase(store);
   const sheet = db.ss.getSheetByName('Staging');
   const rows = [];
 
@@ -217,7 +219,7 @@ function stageStore(store, runId, products) {
     writeInChunks(sheet, rows, CONFIG.STAGING_WRITE_CHUNK, startRow);
   }
 
-  return { ok: true, staged: rows.length, runId, store: store.name || store.id };
+  return { ok: true, staged: rows.length, runId, store: store.name || store.id, dataFileId: db.ss.getId(), dataFileUrl: db.ss.getUrl() };
 }
 
 function productIdKey(productId, sellerId, storeId) {
@@ -227,7 +229,9 @@ function productIdKey(productId, sellerId, storeId) {
 
 function finalizeStore(store, runId) {
   if (!store.id || !runId) throw new Error('store.id and runId are required');
-  const db = ensureStoreDatabase(store);
+  const db = store.dataFileId
+    ? { ss: SpreadsheetApp.openById(String(store.dataFileId)) }
+    : ensureStoreDatabase(store);
   const ss = db.ss;
   const productsSheet = ss.getSheetByName('Products');
   const stagingSheet = ss.getSheetByName('Staging');
