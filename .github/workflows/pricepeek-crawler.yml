@@ -3,8 +3,10 @@ name: PricePeekBD Crawler
 on:
   workflow_dispatch:
   schedule:
-    # GitHub Actions uses UTC. These six runs are approximately every 5 hours.
-    - cron: '17 0,5,10,15,20,23 * * *'
+    # GitHub cron cannot express a continuous 5-hour cycle across a 24-hour day.
+    # These five runs keep the crawler approximately every 5 hours; the daily
+    # reset creates one shorter overnight gap.
+    - cron: '17 0,5,10,15,20 * * *'
 
 concurrency:
   group: pricepeekbd-crawler
