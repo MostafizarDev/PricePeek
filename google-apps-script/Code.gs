@@ -438,6 +438,8 @@ function searchProducts(query, storeId) {
           subcategory: r[7] || null,
           price: Number(r[8]) || 0,
           originalPrice: Number(r[9]) || null,
+          discount: Number(r[9]) > Number(r[8]) ? Math.round(((Number(r[9]) - Number(r[8])) / Number(r[9])) * 100) : 0,
+          isOfficial: !r[2] || /official|mall|star tech|apple gadgets/i.test(String(r[2])),
           image: r[10] || '',
           url: r[11] || '',
           inStock: r[12] !== false && String(r[12]).toLowerCase() !== 'false',
