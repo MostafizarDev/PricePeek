@@ -17,10 +17,20 @@ const STORE_MODULES = {
 };
 
 const DEFAULT_QUERIES = [
-  'iphone', 'samsung', 'xiaomi', 'oppo', 'vivo',
-  'laptop', 'monitor', 'keyboard', 'mouse', 'headphone',
-  'smart tv', 'mobile phone', 'router', 'ssd', 'ram',
-  'gaming', 'shirt', 'polo shirt', 't shirt', 'shoe'
+  'iphone', 'ipad', 'macbook', 'apple watch', 'airpods',
+  'samsung', 'xiaomi', 'oppo', 'vivo', 'realme', 'oneplus',
+  'google pixel', 'motorola', 'nokia', 'honor',
+  'mobile phone', 'mobile', 'tablet', 'smart watch',
+  'laptop', 'desktop', 'monitor', 'keyboard', 'mouse',
+  'headphone', 'earphone', 'speaker', 'microphone',
+  'charger', 'power bank', 'cable', 'adapter', 'hub',
+  'router', 'wifi', 'ssd', 'hard disk', 'ram', 'graphics card',
+  'processor', 'motherboard', 'gaming', 'camera', 'drone',
+  'smart tv', 'tv', 'air conditioner', 'refrigerator',
+  'washing machine', 'fan', 'trimmer', 'shaver',
+  'shirt', 'polo shirt', 't shirt', 'shoe', 'bag',
+  'watch', 'beauty', 'skincare', 'grocery', 'book',
+  'stationery', 'baby', 'kitchen', 'home appliance'
 ];
 
 module.exports = { STORE_MODULES, DEFAULT_QUERIES };
