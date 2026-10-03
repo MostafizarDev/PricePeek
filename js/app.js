@@ -704,6 +704,7 @@ function renderProducts(products) {
         const isWishlisted = APP_STATE.wishlist.some(w => w.id === product.id);
         const isCompared = APP_STATE.comparisonList.some(c => c.id === product.id);
         const marketplaceClass = getMarketplaceClass(product.marketplace);
+        const sellerHTML = product.sellerName ? `<div class="product-seller" style="font-size:0.72rem; color:var(--gray-500); margin-top:3px;">Seller: ${escapeHTML(product.sellerName)}</div>` : '';
 
         let metaHTML = '';
         if (product.rating) {
@@ -724,6 +725,7 @@ function renderProducts(products) {
                     ${product.image ? `<img src="${product.image}" alt="${escapeHTML(product.name || 'Product')}" onerror="this.parentElement.innerHTML='<span class=\'product-image-placeholder\'>📦</span>'">` : '<span class="product-image-placeholder">📦</span>'}
                 </div>
                 <div class="product-name">${escapeHTML(product.name || 'Unknown Product')}</div>
+                ${sellerHTML}
                 <div class="product-pricing">
                     <span class="current-price">${formatBDT(product.price)}</span>
                     ${product.originalPrice && product.originalPrice > product.price ? `<span class="original-price">${formatBDT(product.originalPrice)}</span>` : ''}
