@@ -1,109 +1,135 @@
-const DarazScraper = require('../lib/daraz');
-const StarTechScraper = require('../lib/startech');
-const RyansScraper = require('../lib/ryans');
-const RokomariScraper = require('../lib/rokomari');
-const PickabooScraper = require('../lib/pickaboo');
-const GadgetGearScraper = require('../lib/gadgetgear');
-const TechLandScraper = require('../lib/techland');
-const OthobaScraper = require('../lib/othoba');
-const AjkerDealScraper = require('../lib/ajkerdeal');
-const BagdoomScraper = require('../lib/bagdoom');
-const SumashTechScraper = require('../lib/sumashtech');
-const DazzleScraper = require('../lib/dazzle');
-const AppleGadgetsScraper = require('../lib/applegadgets');
-const ShajgojScraper = require('../lib/shajgoj');
-const ChaldalScraper = require('../lib/chaldal');
 const { normalizeProduct } = require('../lib/normalize');
 const { getStoreStatus } = require('../lib/storeRegistry');
 
-const STORES = {
-  daraz: DarazScraper,
-  startech: StarTechScraper,
-  ryans: RyansScraper,
-  rokomari: RokomariScraper,
-  pickaboo: PickabooScraper,
-  gadgetgear: GadgetGearScraper,
-  techland: TechLandScraper,
-  othoba: OthobaScraper,
-  ajkerdeal: AjkerDealScraper,
-  bagdoom: BagdoomScraper,
-  sumashtech: SumashTechScraper,
-  dazzle: DazzleScraper,
-  applegadgets: AppleGadgetsScraper,
-  shajgoj: ShajgojScraper,
-  chaldal: ChaldalScraper,
+const STORE_MODULES = {
+  daraz: ['Daraz', '../lib/daraz'],
+  startech: ['Star Tech', '../lib/startech'],
+  ryans: ['Ryans', '../lib/ryans'],
+  rokomari: ['Rokomari', '../lib/rokomari'],
+  pickaboo: ['Pickaboo', '../lib/pickaboo'],
+  gadgetgear: ['Gadget & Gear', '../lib/gadgetgear'],
+  techland: ['TechLand', '../lib/techland'],
+  othoba: ['Othoba', '../lib/othoba'],
+  ajkerdeal: ['AjkerDeal', '../lib/ajkerdeal'],
+  bagdoom: ['Bagdoom', '../lib/bagdoom'],
+  sumashtech: ['Sumash Tech', '../lib/sumashtech'],
+  dazzle: ['Dazzle', '../lib/dazzle'],
+  applegadgets: ['Apple Gadgets', '../lib/applegadgets'],
+  shajgoj: ['Shajgoj', '../lib/shajgoj'],
+  chaldal: ['Chaldal', '../lib/chaldal'],
 };
 
 function cleanQuery(value) {
   return String(value || '').trim().slice(0, 160);
 }
 
+function jsonError(res, status, marketplace, message, query = '') {
+  return res.status(status).json({
+    products: [],
+    errors: [{ marketplace, error: message }],
+    sources: [{
+      marketplace,
+      productCount: 0,
+      latencyMs: 0,
+      error: message
+    }],
+    storeStatus: getStoreStatus(),
+    query,
+    fetchedAt: new Date().toISOString()
+  });
+}
+
 module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
 
   const storeId = String(req.query.store || '').toLowerCase().trim();
   const query = cleanQuery(req.query.q);
 
-  if (!storeId || !STORES[storeId]) {
-    return res.status(400).json({
-      products: [],
-      errors: [{ marketplace: 'PricePeekBD', error: 'Unknown marketplace.' }],
-      storeStatus: getStoreStatus(),
-    });
+  if (!storeId || !STORE_MODULES[storeId]) {
+    return jsonError(res, 400, 'PricePeekBD', 'Unknown marketplace.', query);
   }
 
   if (query.length < 2) {
-    return res.status(400).json({
-      products: [],
-      errors: [{ marketplace: 'PricePeekBD', error: 'Please enter a product name.' }],
-      storeStatus: getStoreStatus(),
-    });
+    return jsonError(res, 400, STORE_MODULES[storeId][0], 'Please enter a product name.', query);
   }
 
+  const [marketplace] = STORE_MODULES[storeId];
   const started = Date.now();
-  const Scraper = STORES[storeId];
-  const scraper = new Scraper();
+
+  let Scraper;
+  try {
+    // Load only the requested scraper. A broken optional scraper can no longer
+    // crash the entire /api/store-search function for every marketplace.
+    Scraper = require(STORE_MODULES[storeId][1]);
+  } catch (error) {
+    console.error(`[store-load:${storeId}] module load failed:`, error);
+    return jsonError(
+      res,
+      200,
+      marketplace,
+      `Scraper module could not be loaded: ${error?.message || 'module load failed'}`,
+      query
+    );
+  }
 
   try {
+    const scraper = new Scraper();
     const products = await scraper.search(query);
-    const normalized = (products || [])
-      .map(normalizeProduct)
-      .filter(product => product && product.name && Number.isFinite(Number(product.price)) && product.url)
+
+    const normalized = (Array.isArray(products) ? products : [])
+      .map(product => {
+        try {
+          return normalizeProduct(product);
+        } catch (error) {
+          console.error(`[${marketplace}] normalize error:`, error);
+          return null;
+        }
+      })
+      .filter(product =>
+        product &&
+        product.name &&
+        Number.isFinite(Number(product.price)) &&
+        product.url
+      )
       .slice(0, 30);
 
-    return res.json({
+    return res.status(200).json({
       products: normalized,
       errors: [],
       sources: [{
-        marketplace: scraper.marketplace,
+        marketplace: scraper.marketplace || marketplace,
         productCount: normalized.length,
         latencyMs: Date.now() - started,
-        error: null,
+        error: null
       }],
       storeStatus: getStoreStatus(),
       query,
-      marketplace: scraper.marketplace,
-      fetchedAt: new Date().toISOString(),
+      marketplace: scraper.marketplace || marketplace,
+      fetchedAt: new Date().toISOString()
     });
   } catch (error) {
-    console.error('[' + scraper.marketplace + '] store search error:', error);
-    return res.json({
+    console.error(`[${marketplace}] store search error:`, error);
+
+    // Keep the store isolated: a scraper failure returns structured JSON
+    // instead of turning the entire multi-store search into a 500.
+    return res.status(200).json({
       products: [],
       errors: [{
-        marketplace: scraper.marketplace,
+        marketplace,
         error: error?.message || 'Scraper failed',
-        latencyMs: Date.now() - started,
+        latencyMs: Date.now() - started
       }],
       sources: [{
-        marketplace: scraper.marketplace,
+        marketplace,
         productCount: 0,
         latencyMs: Date.now() - started,
-        error: error?.message || 'Scraper failed',
+        error: error?.message || 'Scraper failed'
       }],
       storeStatus: getStoreStatus(),
       query,
-      marketplace: scraper.marketplace,
-      fetchedAt: new Date().toISOString(),
+      marketplace,
+      fetchedAt: new Date().toISOString()
     });
   }
 };
