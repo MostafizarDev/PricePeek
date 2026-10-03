@@ -3,14 +3,16 @@ const { normalizeProduct } = require('../lib/normalize');
 const { getActiveStores } = require('../lib/storeRegistry');
 const { STORE_MODULES, DEFAULT_QUERIES } = require('./config');
 
-const CRAWL_TIMEOUT_MS = Number(process.env.CRAWL_TIMEOUT_MS || 15000);
-const STORE_CONCURRENCY = Math.max(1, Number(process.env.STORE_CONCURRENCY || 3));
+const STORE_TIMEOUT_MS = Number(process.env.STORE_TIMEOUT_MS || 8 * 60 * 1000);
+const STORE_CONCURRENCY = Math.max(1, Number(process.env.STORE_CONCURRENCY || 5));
 const SHEETS_WEB_APP_URL = String(process.env.SHEETS_WEB_APP_URL || '').trim();
 const CRAWLER_TOKEN = String(process.env.CRAWLER_TOKEN || '').trim();
+const UPLOAD_BATCH_SIZE = Math.max(50, Number(process.env.UPLOAD_BATCH_SIZE || 500));
+const MAX_PRODUCTS_PER_STORE = Math.max(1, Number(process.env.MAX_PRODUCTS_PER_STORE || 10000));
 
 function timeoutPromise(ms) {
   return new Promise((_, reject) =>
-    setTimeout(() => reject(new Error('Crawler timeout')), ms)
+    setTimeout(() => reject(new Error('Store crawler timeout after ' + ms + 'ms')), ms)
   );
 }
 
@@ -31,33 +33,48 @@ function loadScraper(store) {
   return new Scraper();
 }
 
+async function runSeedSearch(scraper, store) {
+  const queries = getQueriesForStore(store);
+  const results = [];
+  for (const query of queries) {
+    try {
+      const products = await Promise.race([
+        scraper.search(query),
+        timeoutPromise(20000),
+      ]);
+      if (Array.isArray(products)) results.push(...products);
+    } catch (error) {
+      console.warn('[' + store.name + '] seed query failed:', query, error.message);
+    }
+  }
+  return results;
+}
+
 async function runStore(store) {
   const started = Date.now();
   try {
     const scraper = loadScraper(store);
 
-    // Prefer a real full-catalog crawler when a store implements one.
-    if (typeof scraper.crawl === 'function') {
-      const products = await Promise.race([
+    // Every scraper now inherits the catalog crawler. It first tries the
+    // store's robots/sitemap product URLs, then falls back to search seeds.
+    let products = [];
+    let mode = 'catalog-sitemap';
+
+    try {
+      products = await Promise.race([
         scraper.crawl(),
-        timeoutPromise(CRAWL_TIMEOUT_MS),
+        timeoutPromise(STORE_TIMEOUT_MS),
       ]);
-      return finalizeStore(store, products, Date.now() - started, 'crawl');
+    } catch (error) {
+      console.warn('[' + store.name + '] catalog crawl failed:', error.message);
     }
 
-    // Current scrapers expose search(), so use bounded seed searches until
-    // a store-specific full-catalog crawl is implemented.
-    const queries = getQueriesForStore(store);
-    const results = [];
-    for (const query of queries) {
-      const products = await Promise.race([
-        scraper.search(query),
-        timeoutPromise(CRAWL_TIMEOUT_MS),
-      ]);
-      if (Array.isArray(products)) results.push(...products);
+    if (!Array.isArray(products) || products.length === 0) {
+      mode = 'seed-search-fallback';
+      products = await runSeedSearch(scraper, store);
     }
 
-    return finalizeStore(store, results, Date.now() - started, 'seed-search');
+    return finalizeStore(store, products, Date.now() - started, mode);
   } catch (error) {
     return {
       storeId: store.id,
@@ -95,6 +112,8 @@ function finalizeStore(store, rawProducts, latencyMs, mode) {
         externalProductId: key,
         storeId: store.id,
       });
+
+      if (products.length >= MAX_PRODUCTS_PER_STORE) break;
     } catch (error) {
       console.warn('[' + store.name + '] product normalize failed:', error.message);
     }
@@ -104,17 +123,14 @@ function finalizeStore(store, rawProducts, latencyMs, mode) {
     storeId: store.id,
     marketplace: store.name,
     ok: products.length > 0,
-    products: products.slice(0, 1000),
+    products,
     mode,
     latencyMs,
     error: products.length ? null : 'No products returned',
   };
 }
 
-async function pushStoreResult(result) {
-  if (!SHEETS_WEB_APP_URL) throw new Error('SHEETS_WEB_APP_URL is not configured');
-  if (!CRAWLER_TOKEN) throw new Error('CRAWLER_TOKEN is not configured');
-
+async function pushStoreBatch(result, products, batchNumber, totalBatches) {
   const response = await axios.post(
     SHEETS_WEB_APP_URL,
     {
@@ -128,17 +144,46 @@ async function pushStoreResult(result) {
         error: result.error,
         latencyMs: result.latencyMs,
         crawledAt: new Date().toISOString(),
+        batchNumber,
+        totalBatches,
+        fullCatalog: result.mode === 'catalog-sitemap',
       },
-      products: result.products,
+      products,
     },
-    { timeout: 30000 }
+    { timeout: 60000, maxContentLength: 10 * 1024 * 1024 }
   );
 
   if (response.status < 200 || response.status >= 300 || response.data?.ok === false) {
     throw new Error(response.data?.error || 'Google Sheets update failed');
   }
-
   return response.data;
+}
+
+async function pushStoreResult(result) {
+  if (!SHEETS_WEB_APP_URL) throw new Error('SHEETS_WEB_APP_URL is not configured');
+  if (!CRAWLER_TOKEN) throw new Error('CRAWLER_TOKEN is not configured');
+
+  const products = result.products || [];
+  const totalBatches = Math.max(1, Math.ceil(products.length / UPLOAD_BATCH_SIZE));
+
+  if (!products.length) {
+    return pushStoreBatch(result, [], 1, 1);
+  }
+
+  let uploaded = 0;
+  for (let i = 0; i < products.length; i += UPLOAD_BATCH_SIZE) {
+    const batch = products.slice(i, i + UPLOAD_BATCH_SIZE);
+    await pushStoreBatch(
+      result,
+      batch,
+      Math.floor(i / UPLOAD_BATCH_SIZE) + 1,
+      totalBatches
+    );
+    uploaded += batch.length;
+    console.log('[' + result.marketplace + '] uploaded ' + uploaded + '/' + products.length);
+  }
+
+  return { ok: true, received: products.length };
 }
 
 async function runWithConcurrency(items, limit, worker) {
@@ -166,9 +211,11 @@ async function main() {
 
   const stores = getActiveStores();
   console.log('[crawler] Starting', stores.length, 'stores');
+  console.log('[crawler] Max products/store:', MAX_PRODUCTS_PER_STORE);
+  console.log('[crawler] Upload batch size:', UPLOAD_BATCH_SIZE);
 
   const results = await runWithConcurrency(stores, STORE_CONCURRENCY, runStore);
-  let uploaded = 0;
+  let uploadedStores = 0;
 
   for (const result of results) {
     console.log(
@@ -180,19 +227,25 @@ async function main() {
       result.error || ''
     );
 
-    // Upload success or failure status. Failed crawls never delete/overwrite
-    // existing product rows because the Sheets endpoint only upserts products
-    // when the crawl contains valid products.
     try {
       await pushStoreResult(result);
-      uploaded++;
+      uploadedStores++;
     } catch (error) {
       console.error('[' + result.marketplace + '] sheet update failed:', error.message);
     }
   }
 
   const successCount = results.filter(r => r.ok).length;
-  console.log('[crawler] Finished:', successCount + '/' + results.length, 'stores succeeded;', uploaded, 'uploaded');
+  const totalProducts = results.reduce((sum, r) => sum + r.products.length, 0);
+  console.log(
+    '[crawler] Finished:',
+    successCount + '/' + results.length,
+    'stores succeeded;',
+    totalProducts,
+    'products;',
+    uploadedStores,
+    'stores uploaded'
+  );
 }
 
 main().catch(error => {
