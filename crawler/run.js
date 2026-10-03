@@ -216,16 +216,18 @@ async function pushStoreResult(result) {
 
   for (let i = 0; i < result.products.length; i += UPLOAD_BATCH_SIZE) {
     const batch = result.products.slice(i, i + UPLOAD_BATCH_SIZE);
-    await post({
+    const staged = await post({
       action: 'stage',
       token: CRAWLER_TOKEN,
       runId: result.runId,
       store: {
         id: result.storeId,
-        name: result.marketplace
+        name: result.marketplace,
+        dataFileId: result.dataFileId || ''
       },
       products: batch
     });
+    if (staged.dataFileId) result.dataFileId = staged.dataFileId;
 
     console.log(
       '[' + result.marketplace + '] staged ' +
