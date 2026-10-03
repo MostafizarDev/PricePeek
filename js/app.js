@@ -76,10 +76,10 @@ const storesSection = document.getElementById('stores-section');
 if (storesSection) storesSection.style.display = 'none';
 
     document.getElementById('loadingSpinner').classList.add('active');
-    document.getElementById('loadingText').textContent = 'Fetching live prices...';
+    document.getElementById('loadingText').textContent = 'Checking saved prices...';
     document.getElementById('productGrid').innerHTML = '';
     enterResultView();
-    document.getElementById('statusText').textContent = 'Searching...';
+    document.getElementById('statusText').textContent = 'Searching saved prices...';
     const statusDot = document.querySelector('.status-dot');
     if (statusDot) statusDot.style.background = '#F59E0B';
 
