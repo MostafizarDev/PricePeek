@@ -43,7 +43,7 @@ function doPost(e) {
       return json({ ok: false, error: 'Unknown action' });
     }
 
-    return json(upsertStore(body.store, body.products || []));
+    return json(upsertStore(body.store || {}, body.products || []));
   } catch (error) {
     return json({ ok: false, error: error.message });
   }
@@ -77,22 +77,26 @@ function getStoreSheet(store) {
 
 function upsertStore(store, products) {
   const sheet = getStoreSheet(store);
-  const rows = sheet.getDataRange().getValues();
-  const header = rows.length ? rows[0] : CONFIG.HEADER;
+  const allRows = sheet.getDataRange().getValues();
+  const header = allRows.length ? allRows[0] : CONFIG.HEADER;
   const index = {};
   header.forEach((value, i) => index[String(value)] = i);
 
+  const historyRows = [];
   const existing = new Map();
-  for (let i = 1; i < rows.length; i++) {
-    const id = String(rows[i][index.product_id] || '').trim().toLowerCase();
-    if (id) existing.set(id, i + 1);
+
+  for (let i = 1; i < allRows.length; i++) {
+    const id = String(allRows[i][index.product_id] || '').trim().toLowerCase();
+    if (id) existing.set(id, i);
   }
 
   const now = new Date().toISOString();
+  const limited = products.slice(0, CONFIG.MAX_PRODUCTS_PER_REQUEST);
+  const updatedRows = allRows.slice(1);
+  const newRows = [];
   let added = 0;
   let updated = 0;
 
-  const limited = products.slice(0, CONFIG.MAX_PRODUCTS_PER_REQUEST);
   for (const p of limited) {
     const id = String(p.externalProductId || p.product_id || p.url || '').trim().toLowerCase();
     if (!id) continue;
@@ -112,13 +116,18 @@ function upsertStore(store, products) {
       now
     ];
 
-    const rowNumber = existing.get(id);
-    if (rowNumber) {
-      const previous = rows[rowNumber - 1];
+    const rowIndex = existing.get(id);
+
+    if (rowIndex !== undefined) {
+      const previous = updatedRows[rowIndex];
       const previousPrice = Number(previous[index.price]);
       const nextPrice = Number(values[index.price]);
 
-      if (Number.isFinite(previousPrice) && Number.isFinite(nextPrice) && previousPrice !== nextPrice) {
+      if (
+        Number.isFinite(previousPrice) &&
+        Number.isFinite(nextPrice) &&
+        previousPrice !== nextPrice
+      ) {
         historyRows.push([
           store.id || '',
           store.name || '',
@@ -130,23 +139,48 @@ function upsertStore(store, products) {
         ]);
       }
 
-      sheet.getRange(rowNumber, 1, 1, CONFIG.HEADER.length).setValues([values]);
+      updatedRows[rowIndex] = values;
       updated++;
     } else {
-      sheet.appendRow(values);
+      newRows.push(values);
+      existing.set(id, updatedRows.length + newRows.length - 1);
       added++;
     }
   }
 
+  if (updatedRows.length) {
+    sheet.getRange(2, 1, updatedRows.length, CONFIG.HEADER.length)
+      .setValues(updatedRows);
+  }
+
+  if (newRows.length) {
+    sheet.getRange(
+      sheet.getLastRow() + 1,
+      1,
+      newRows.length,
+      CONFIG.HEADER.length
+    ).setValues(newRows);
+  }
+
   appendPriceHistory(historyRows);
-  updateStoresSheet(store, limited.length, now, null);
+
+  const actualProductCount = Math.max(0, sheet.getLastRow() - 1);
+  updateStoresSheet(
+    store,
+    actualProductCount,
+    now,
+    store.ok ? '' : (store.error || 'Crawler returned no products')
+  );
 
   return {
     ok: true,
-    store: store.name,
+    store: store.name || store.id,
     added,
     updated,
     received: limited.length,
+    productCount: actualProductCount,
+    batchNumber: store.batchNumber || 1,
+    totalBatches: store.totalBatches || 1,
     updatedAt: now
   };
 }
@@ -197,7 +231,10 @@ function updateStoresSheet(store, productCount, timestamp, error) {
     }
   }
 
-  const existing = rowNumber > 0 ? sheet.getRange(rowNumber, 1, 1, 8).getValues()[0] : [];
+  const existing = rowNumber > 0
+    ? sheet.getRange(rowNumber, 1, 1, 8).getValues()[0]
+    : [];
+
   const row = [
     store.id || '',
     store.name || '',
@@ -205,12 +242,15 @@ function updateStoresSheet(store, productCount, timestamp, error) {
     productCount,
     timestamp,
     store.ok ? timestamp : (existing[5] || ''),
-    error || store.error || '',
+    error || '',
     timestamp
   ];
 
-  if (rowNumber > 0) sheet.getRange(rowNumber, 1, 1, 8).setValues([row]);
-  else sheet.appendRow(row);
+  if (rowNumber > 0) {
+    sheet.getRange(rowNumber, 1, 1, 8).setValues([row]);
+  } else {
+    sheet.appendRow(row);
+  }
 }
 
 function readStoreStatus() {
@@ -219,15 +259,23 @@ function readStoreStatus() {
   if (!sheet || sheet.getLastRow() < 2) return [];
 
   return sheet.getRange(2, 1, sheet.getLastRow() - 1, 8).getValues().map(r => ({
-    id: r[0], name: r[1], status: r[2], productCount: r[3],
-    lastCrawl: r[4], lastSuccess: r[5], lastError: r[6], updatedAt: r[7]
+    id: r[0],
+    name: r[1],
+    status: r[2],
+    productCount: r[3],
+    lastCrawl: r[4],
+    lastSuccess: r[5],
+    lastError: r[6],
+    updatedAt: r[7]
   }));
 }
 
 function searchProducts(query) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const stores = ss.getSheets().filter(sheet => sheet.getName() !== 'Stores' && sheet.getName() !== 'PriceHistory');
-  const tokens = query.split(/\\s+/).filter(Boolean);
+  const stores = ss.getSheets()
+    .filter(sheet => sheet.getName() !== 'Stores' && sheet.getName() !== 'PriceHistory');
+
+  const tokens = query.split(/\s+/).filter(Boolean);
   const products = [];
   const storeNames = new Set();
 
@@ -256,14 +304,16 @@ function searchProducts(query) {
         originalPrice: Number(rows[i][idx.old_price]) || null,
         image: rows[i][idx.image] || '',
         url: rows[i][idx.url] || '',
-        inStock: rows[i][idx.in_stock] !== false && String(rows[i][idx.in_stock]).toLowerCase() !== 'false',
+        inStock: rows[i][idx.in_stock] !== false &&
+          String(rows[i][idx.in_stock]).toLowerCase() !== 'false',
         marketplace: sheet.getName(),
         fetchedAt: rows[i][idx.last_seen] || null,
         dataQuality: 'crawler'
       });
+
       storeNames.add(sheet.getName());
 
-      if (products.length >= 500) return;
+      if (products.length >= 1000) return;
     }
   });
 
