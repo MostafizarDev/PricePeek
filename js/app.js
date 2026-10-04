@@ -128,7 +128,7 @@ async function performSearch(forceRefresh = false) {
     setActiveNav('search');
     const query = document.getElementById('mainSearch').value.trim();
     if (!query) {
-        showNotification('Please enter a product name or URL', 'error');
+        showNotification('Please enter a product name, brand, or model', 'error');
         return;
     }
     if (APP_STATE.isSearching) return;
@@ -772,6 +772,30 @@ function renderSearchError(message = 'We could not load prices right now.') { co
 
 // ============ RENDER PRODUCTS (rating with one decimal) ============
 /* Best Deal is calculated by the backend deal engine. */
+function renderSearchStatus() {
+    const box = document.getElementById('searchStatusPanel');
+    if (!box) return;
+    const errors = Array.isArray(APP_STATE.searchErrors) ? APP_STATE.searchErrors : [];
+    const stores = Array.isArray(APP_STATE.searchStores) ? APP_STATE.searchStores : [];
+    const successful = stores.filter(s => s && (s.status === 'ok' || s.status === 'success')).length;
+    const failed = stores.filter(s => s && (s.status === 'error' || s.status === 'failed' || s.status === 'timeout')).length;
+    if (!errors.length && !failed) {
+        box.innerHTML = '<span class="search-status-ok">✓ Live prices checked across the selected stores</span>';
+        box.className = 'search-status-panel success';
+        return;
+    }
+    const details = errors.slice(0, 4).map(item => {
+        const name = item?.store || item?.marketplace || 'Store';
+        const reason = item?.error || item?.message || 'Unavailable';
+        return '<span class="search-status-item"><strong>' + escapeHTML(name) + '</strong>: ' + escapeHTML(reason) + '</span>';
+    }).join('');
+    box.className = 'search-status-panel warning';
+    box.innerHTML = '<span class="search-status-summary">⚠ Some stores could not be checked' +
+        (successful ? ' — ' + successful + ' store' + (successful === 1 ? '' : 's') + ' responded' : '') +
+        (failed ? ', ' + failed + ' unavailable' : '') +
+        '.</span>' + (details ? '<div class="search-status-details">' + details + '</div>' : '');
+}
+
 function renderProducts(products) {
     const grid = document.getElementById('productGrid');
     if (products.length === 0) {
