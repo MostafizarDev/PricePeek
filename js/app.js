@@ -124,6 +124,13 @@ function toggleStoreSelection(storeId) {
 }
 
 // ============ PERFORM SEARCH (keyword) ============
+async async function refreshResults() {
+    if (APP_STATE.isSearching) return;
+    const query = APP_STATE.lastSearchQuery || document.getElementById('mainSearch')?.value?.trim();
+    if (!query) return;
+    await performSearch(true);
+}
+
 async function performSearch(forceRefresh = false) {
     setActiveNav('search');
     const query = document.getElementById('mainSearch').value.trim();
@@ -1203,10 +1210,10 @@ async function showDealsPage() {
     document.getElementById('resultsSection').classList.add('active');
     const popularQueries = ['phone', 'laptop', 'tv', 'headphone', 'mouse'];
     let allProducts = [];
-    for (const q of popularQueries) {
-        const { products } = await scraperManager.searchAll(q);
-        allProducts.push(...products);
-    }
+    const results = await Promise.allSettled(popularQueries.map(q => scraperManager.searchAll(q)));
+    results.forEach(result => {
+        if (result.status === 'fulfilled' && Array.isArray(result.value?.products)) allProducts.push(...result.value.products);
+    });
     const unique = allProducts.filter((p, i, arr) => arr.findIndex(x => x.name === p.name && x.marketplace === p.marketplace) === i);
     unique.sort((a, b) => (b.discount || 0) - (a.discount || 0));
     APP_STATE.allProducts = unique.slice(0, 50);
