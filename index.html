@@ -31,6 +31,66 @@
                 <button class="nav-link" onclick="showComparison()">
                     Compare <span id="compare-count">0</span>
                 </button>
+                <!-- Store Search Dropdown -->
+                <div class="store-dropdown" id="storeDropdown">
+                    <button type="button" class="store-dropdown-trigger" id="storeDropdownTrigger" onclick="toggleStoreDropdown(event)" aria-haspopup="true" aria-expanded="false" aria-label="Select stores to search">
+                        <span class="store-dropdown-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none"><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h11A2.5 2.5 0 0 1 20 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5v-9Z" stroke="currentColor" stroke-width="1.8"/><path d="M8 9.5h8M8 13h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                        </span>
+                        <span class="store-dropdown-text">
+                            <span>Search in</span>
+                            <strong id="storeSearchMode">All Stores</strong>
+                        </span>
+                        <svg class="store-dropdown-chevron" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m7 10 5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+
+                    <div class="store-dropdown-menu" id="storeDropdownMenu" role="menu">
+                        <div class="store-dropdown-menu-head">
+                            <div>
+                                <strong>Search in</strong>
+                                <span id="storeSearchHelp">Choose one or more stores</span>
+                            </div>
+                            <button type="button" class="store-select-all-btn" onclick="selectStoreMode('all', this); event.stopPropagation();">All</button>
+                        </div>
+
+                        <div class="store-dropdown-options">
+                            <button type="button" class="store-option all-store-option" data-store="all" onclick="selectStoreMode('all', this)">
+                                <span class="store-checkmark">✓</span><span>All Stores</span>
+                            </button>
+                            <button type="button" class="store-option" data-store="daraz" onclick="toggleStoreSelection('daraz')">
+                                <span class="store-checkmark">✓</span><span>Daraz</span>
+                            </button>
+                            <button type="button" class="store-option" data-store="startech" onclick="toggleStoreSelection('startech')">
+                                <span class="store-checkmark">✓</span><span>Star Tech</span>
+                            </button>
+                            <button type="button" class="store-option" data-store="ryans" onclick="toggleStoreSelection('ryans')">
+                                <span class="store-checkmark">✓</span><span>Ryans</span>
+                            </button>
+                            <button type="button" class="store-option" data-store="applegadgets" onclick="toggleStoreSelection('applegadgets')">
+                                <span class="store-checkmark">✓</span><span>Apple Gadgets</span>
+                            </button>
+                            <button type="button" class="store-option" data-store="pickaboo" onclick="toggleStoreSelection('pickaboo')">
+                                <span class="store-checkmark">✓</span><span>Pickaboo</span>
+                            </button>
+                            <button type="button" class="store-option" data-store="gadgetgear" onclick="toggleStoreSelection('gadgetgear')">
+                                <span class="store-checkmark">✓</span><span>Gadget &amp; Gear</span>
+                            </button>
+                            <button type="button" class="store-option" data-store="techland" onclick="toggleStoreSelection('techland')">
+                                <span class="store-checkmark">✓</span><span>TechLand</span>
+                            </button>
+                            <button type="button" class="store-option" data-store="rokomari" onclick="toggleStoreSelection('rokomari')">
+                                <span class="store-checkmark">✓</span><span>Rokomari</span>
+                            </button>
+                            <button type="button" class="store-option" data-store="othoba" onclick="toggleStoreSelection('othoba')">
+                                <span class="store-checkmark">✓</span><span>Othoba</span>
+                            </button>
+                            <button type="button" class="store-option" data-store="ajkerdeal" onclick="toggleStoreSelection('ajkerdeal')">
+                                <span class="store-checkmark">✓</span><span>AjkerDeal</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Dark/Light Toggle -->
                 <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark/light mode">
                     <span id="themeIcon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M20.2 15.2A8.5 8.5 0 0 1 8.8 3.8 8.6 8.6 0 1 0 20.2 15.2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
@@ -68,27 +128,6 @@
                 </div>
             </div><div class="image-search-hint" id="imageSearchHint">📷 Search by image: upload a product image or paste an image with <strong>Ctrl + V</strong></div>
 
-            <div class="store-search-selector" id="storeSearchSelector">
-                <div class="store-search-label">
-                    <span>Search in</span>
-                    <span class="store-search-mode" id="storeSearchMode">Smart Stores</span>
-                </div>
-                <div class="store-search-options">
-                    <button type="button" class="store-option active" data-store="smart" onclick="selectStoreMode('smart', this)">✓ Smart Stores</button>
-                    <button type="button" class="store-option" data-store="daraz" onclick="toggleStoreSelection('daraz', this)">Daraz</button>
-                    <button type="button" class="store-option" data-store="startech" onclick="toggleStoreSelection('startech', this)">Star Tech</button>
-                    <button type="button" class="store-option" data-store="ryans" onclick="toggleStoreSelection('ryans', this)">Ryans</button>
-                    <button type="button" class="store-option" data-store="applegadgets" onclick="toggleStoreSelection('applegadgets', this)">Apple Gadgets</button>
-                    <button type="button" class="store-option" data-store="pickaboo" onclick="toggleStoreSelection('pickaboo', this)">Pickaboo</button>
-                    <button type="button" class="store-option" data-store="gadgetgear" onclick="toggleStoreSelection('gadgetgear', this)">Gadget &amp; Gear</button>
-                    <button type="button" class="store-option" data-store="techland" onclick="toggleStoreSelection('techland', this)">TechLand</button>
-                    <button type="button" class="store-option" data-store="rokomari" onclick="toggleStoreSelection('rokomari', this)">Rokomari</button>
-                    <button type="button" class="store-option" data-store="othoba" onclick="toggleStoreSelection('othoba', this)">Othoba</button>
-                    <button type="button" class="store-option" data-store="ajkerdeal" onclick="toggleStoreSelection('ajkerdeal', this)">AjkerDeal</button>
-                    <button type="button" class="store-option all-store-option" data-store="all" onclick="selectStoreMode('all', this)">All Stores</button>
-                </div>
-                <div class="store-search-help" id="storeSearchHelp">Smart mode automatically selects relevant stores to reduce search time.</div>
-            </div>
 
             <div class="quick-suggestions" id="quickSuggestions">
                 <span class="suggestion-chip" onclick="quickSearch('iPhone 15 Pro Max')">iPhone 15 Pro Max</span>
