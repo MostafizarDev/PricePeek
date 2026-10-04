@@ -2,6 +2,7 @@ const axios = require('axios');
 const { resolveStores } = require('../lib/storeRegistry');
 const { normalizeProduct } = require('../lib/normalize');
 const { matchProducts } = require('../lib/productMatcher');
+const { findBestDeal } = require('../lib/bestDeal');
 
 const CACHE_TTL = 60 * 1000;
 const STORE_TIMEOUT = 9000;
@@ -195,6 +196,8 @@ async function searchAll(query, selection) {
   const cleanSimilarProducts = matched.similarProducts
     .map(({ _score, ...product }) => product);
 
+  const deal = findBestDeal(cleanExactProducts);
+
   const data = {
     products: cleanProducts,
     exactProducts: cleanExactProducts,
@@ -202,6 +205,9 @@ async function searchAll(query, selection) {
     exactProductCount: matched.exactProductCount,
     similarProductCount: matched.similarProductCount,
     matchStats: matched.matchStats,
+    bestDeal: deal.bestDeal ? { id: deal.bestDeal.id, marketplace: deal.bestDeal.marketplace, price: deal.bestDeal.price, dealScore: deal.bestDeal.dealScore, badges: deal.badges[deal.bestDeal.id] || ['Best Deal'] } : null,
+    dealBadges: deal.badges,
+    dealScores: deal.scoredProducts.reduce((map, product) => { map[product.id] = product.dealScore; return map; }, {}),
     errors,
     sources,
     storeSelection: selection || 'smart',
