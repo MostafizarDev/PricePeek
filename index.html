@@ -33,15 +33,11 @@
                 </button>
                 <!-- Store Search Dropdown -->
                 <div class="store-dropdown" id="storeDropdown">
-                    <button type="button" class="store-dropdown-trigger" id="storeDropdownTrigger" onclick="toggleStoreDropdown(event)" aria-haspopup="true" aria-expanded="false" aria-label="Select stores to search">
-                        <span class="store-dropdown-icon" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" fill="none"><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h11A2.5 2.5 0 0 1 20 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5v-9Z" stroke="currentColor" stroke-width="1.8"/><path d="M8 9.5h8M8 13h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-                        </span>
-                        <span class="store-dropdown-text">
-                            <span>Search in</span>
-                            <strong id="storeSearchMode">All Stores</strong>
-                        </span>
-                        <svg class="store-dropdown-chevron" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m7 10 5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <button type="button" class="store-dropdown-trigger" id="storeDropdownTrigger" onclick="toggleStoreDropdown(event)" aria-haspopup="true" aria-expanded="false" aria-label="Select stores to search" title="Select stores">
+                        <svg class="store-dropdown-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M5 7.5A2.5 2.5 0 0 1 7.5 5h9A2.5 2.5 0 0 1 19 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 5 16.5v-9Z" stroke="currentColor" stroke-width="1.7"/>
+                            <path d="M8.5 9h7M8.5 12h7M8.5 15h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+                        </svg>
                     </button>
 
                     <div class="store-dropdown-menu" id="storeDropdownMenu" role="menu">
