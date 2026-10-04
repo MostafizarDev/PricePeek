@@ -101,7 +101,6 @@ async function searchStore(store, query) {
       })
       .filter(product => product && product.name && product.url && product.price != null)
       .map(product => ({ ...product, _score: scoreProduct(product, query) }))
-      .filter(product => product._score > 0)
       .sort((a, b) => b._score - a._score || Number(a.price) - Number(b.price))
       .slice(0, 30);
 
