@@ -27,13 +27,7 @@ jobs:
       - name: Check JavaScript syntax
         run: |
           set -e
-          node --check lib/baseScraper.js
-          node --check lib/normalize.js
-          node --check lib/storeRegistry.js
-          node --check lib/daraz.js
-          node --check lib/startech.js
-          node --check lib/ryans.js
-          node --check lib/applegadgets.js
-          node --check api/search.js
-          node --check js/scrapers.js
-          node --check js/app.js
+          for file in lib/*.js api/*.js js/*.js; do
+            echo "Checking $file"
+            node --check "$file"
+          done
