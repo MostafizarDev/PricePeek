@@ -14,7 +14,7 @@ class PricePeekAPI {
       const text = await response.text();
       let data = null;
       try { data = text ? JSON.parse(text) : null; }
-      catch { throw new Error('Crawler API returned an invalid response.'); }
+      catch { throw new Error('Search API returned an invalid response.'); }
 
       if (!response.ok) {
         throw new Error(data?.error || data?.message || `Request failed (${response.status})`);
@@ -26,12 +26,13 @@ class PricePeekAPI {
     }
   }
 
-  async searchAll(query) {
-    return this.request(`/api/search?q=${encodeURIComponent(query)}`, { timeoutMs: 30000 });
+  async searchAll(query, stores = 'smart') {
+    const params = new URLSearchParams({ q: query, stores });
+    return this.request(`/api/search?${params.toString()}`, { timeoutMs: 30000 });
   }
 
   async searchByUrl(url) {
-    return this.request(`/api/search?url=${encodeURIComponent(url)}`, { timeoutMs: 12000 });
+    throw new Error('URL search is not enabled in the live-search MVP. Please search by product name.');
   }
 }
 
