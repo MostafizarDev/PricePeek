@@ -865,6 +865,7 @@ function toggleWishlist(productId) {
     updateWishlistCount();
     renderProducts(APP_STATE.filteredProducts);
     renderWishlistDrawer();
+    updateStoreSelectionUI();
 }
 function updateWishlistCount() { document.getElementById('wishlist-count').textContent = APP_STATE.wishlist.length; }
 function toggleWishlistDrawer() {
