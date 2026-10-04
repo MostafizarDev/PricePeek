@@ -25,6 +25,54 @@ function scoreProduct(product, query) {
   return tokens.filter(token => text.includes(token)).length / tokens.length;
 }
 
+function attachDarazSellerOffers(products, marketplace) {
+  if (marketplace !== 'Daraz') return products;
+
+  const groups = new Map();
+  for (const product of products) {
+    const key = product.normalizedName || String(product.name || '').toLowerCase().trim();
+    if (!key) continue;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(product);
+  }
+
+  for (const offers of groups.values()) {
+    const unique = new Map();
+    for (const offer of offers) {
+      const sellerKey = String(offer.sellerId || offer.sellerName || offer.url || offer.id || '').trim().toLowerCase();
+      if (!sellerKey) continue;
+      if (!unique.has(sellerKey)) unique.set(sellerKey, offer);
+    }
+
+    const sellerOffers = Array.from(unique.values())
+      .sort((a, b) => Number(a.price || Infinity) - Number(b.price || Infinity))
+      .map((offer, index) => ({
+        id: offer.id,
+        price: offer.price,
+        originalPrice: offer.originalPrice,
+        discount: offer.discount,
+        url: offer.url,
+        sellerName: offer.sellerName || null,
+        sellerId: offer.sellerId || null,
+        sellerUrl: offer.sellerUrl || null,
+        sellerRating: offer.sellerRating || null,
+        sellerPositiveRate: offer.sellerPositiveRate || null,
+        sellerFollowers: offer.sellerFollowers || null,
+        isOfficial: offer.isOfficial === true,
+        inStock: offer.inStock !== false,
+        rank: index + 1
+      }));
+
+    for (const product of offers) {
+      product.sellerOffers = sellerOffers;
+      product.sellerCount = sellerOffers.length;
+      product.sellerOfferRank = sellerOffers.find(item => item.id === product.id)?.rank || null;
+    }
+  }
+
+  return products;
+}
+
 function withTimeout(promise, ms, label) {
   return Promise.race([
     promise,
@@ -55,6 +103,8 @@ async function searchStore(store, query) {
       .filter(product => product._score > 0)
       .sort((a, b) => b._score - a._score || Number(a.price) - Number(b.price))
       .slice(0, 30);
+
+    attachDarazSellerOffers(products, store.name);
 
     return {
       id: store.id,
