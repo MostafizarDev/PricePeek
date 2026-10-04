@@ -740,6 +740,10 @@ function applyFiltersAndSort() {
             products = products.filter(p => p.discount > 0);
         } else if (APP_STATE.currentFilter === 'cashback') {
             products = products.filter(p => p.cashback && p.cashback.length > 0);
+        } else if (APP_STATE.currentFilter === 'exact') {
+            products = products.filter(p => p.matchType !== 'similar');
+        } else if (APP_STATE.currentFilter === 'similar') {
+            products = products.filter(p => p.matchType === 'similar');
         } else {
             products = products.filter(p => p.marketplace === APP_STATE.currentFilter);
         }
