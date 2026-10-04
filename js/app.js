@@ -67,7 +67,7 @@ function enterResultView() {
 }
 
 // ============ STORE SEARCH SELECTION ============
-const STORE_IDS = ['daraz','startech','ryans','applegadgets','pickaboo','gadgetgear','techland','rokomari','othoba','ajkerdeal'];
+const STORE_IDS = ['daraz','startech','applegadgets','pickaboo','gadgetgear','techland','rokomari','othoba','ajkerdeal'];
 
 function getSelectedStoreMode() {
     return APP_STATE.storeSelection || 'all';
