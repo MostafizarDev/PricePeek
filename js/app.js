@@ -675,37 +675,6 @@ function initTheme() {
 }
 
 // ============ FILTER & SORT ============
-function applyFiltersAndSort() {
-    let products = [...APP_STATE.allProducts];
-    if (APP_STATE.currentFilter !== 'all') {
-        if (APP_STATE.currentFilter === 'inStock') {
-            products = products.filter(p => p.inStock);
-        } else if (APP_STATE.currentFilter === 'discount') {
-            products = products.filter(p => p.discount > 0);
-        } else if (APP_STATE.currentFilter === 'cashback') {
-            products = products.filter(p => p.cashback && p.cashback.length > 0);
-        } else {
-            products = products.filter(p => p.marketplace === APP_STATE.currentFilter);
-        }
-    }
-    switch (APP_STATE.currentSort) {
-        case 'price_asc': products.sort((a, b) => (a.price || Infinity) - (b.price || Infinity)); break;
-        case 'price_desc': products.sort((a, b) => (b.price || 0) - (a.price || 0)); break;
-        case 'discount_desc': products.sort((a, b) => (b.discount || 0) - (a.discount || 0)); break;
-        case 'name_asc': products.sort((a, b) => (a.name || '').localeCompare(b.name || '')); break;
-    }
-    APP_STATE.filteredProducts = products;
-    renderProducts(products);
-    document.getElementById('resultsCount').textContent = `Found ${products.length} products`;
-    const queryEl = document.getElementById('resultsQuery');
-    if (queryEl) {
-        const q = APP_STATE.lastSearchQuery || document.getElementById('mainSearch')?.value?.trim() || '';
-        queryEl.textContent = q ? `Comparing offers for “${q}”` : 'Compare offers from supported Bangladesh stores';
-    }
-    const freshnessEl = document.getElementById('resultsFreshness');
-    if (freshnessEl) freshnessEl.textContent = 'Prices checked live';
-}
-
 function toggleFilter(button, filter) {
     document.querySelectorAll('.filter-bar .filter-btn').forEach(b => b.classList.remove('active'));
     button.classList.add('active');
@@ -756,10 +725,12 @@ function renderProducts(products) {
         grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px; color:#9CA3AF;">No products match current filters</div>';
         return;
     }
+    const exactProducts = products.filter(p => p.matchType !== 'similar');
+    const similarProducts = products.filter(p => p.matchType === 'similar');
     const cheapest = products.filter(p => p.inStock && p.price != null).sort((a,b) => a.price - b.price)[0];
     const bestDeal = getBestDealProduct(products);
 
-    grid.innerHTML = products.map(product => {
+    const renderCard = (product) => {
         const isCheapest = cheapest && ((product.id && product.id === cheapest.id) || product.url === cheapest.url);
         const isBestDeal = bestDeal && ((product.id && product.id === bestDeal.id) || product.url === bestDeal.url);
         const isWishlisted = APP_STATE.wishlist.some(w => w.id === product.id);
@@ -804,7 +775,18 @@ function renderProducts(products) {
                     <button class="btn-compare ${isCompared ? 'active' : ''}" onclick="toggleCompare('${product.id}')">⚖️</button>
                 </div>
             </div>`;
-    }).join('');
+    };
+    
+    const sections = [];
+    if (exactProducts.length) {
+        sections.push('<div class="result-group-heading" style="grid-column:1/-1;"><strong>Exact Product</strong><span>Same model / specification</span></div>');
+        sections.push(exactProducts.map(renderCard).join(''));
+    }
+    if (similarProducts.length) {
+        sections.push('<div class="result-group-heading" style="grid-column:1/-1;"><strong>Similar Products</strong><span>Related alternatives — not the exact match</span></div>');
+        sections.push(similarProducts.map(renderCard).join(''));
+    }
+    grid.innerHTML = sections.join('');
 }
 
 // ============ UPDATE BEST DEAL (review, price, sold centered) ============
