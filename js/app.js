@@ -37,6 +37,9 @@ const APP_STATE = {
     currentSort: 'price_asc',
     isSearching: false,
     lastSearchQuery: '',
+    dealBadges: {},
+    dealScores: {},
+    bestDealId: null,
     storeSelection: localStorage.getItem('pricepeekStoreSelection') || 'smart',
 };
 
@@ -145,7 +148,11 @@ if (storesSection) storesSection.style.display = 'none';
     if (statusDot) statusDot.style.background = '#F59E0B';
 
     try {
-        const { products, errors, sources, stores } = await scraperManager.searchAll(query, getSelectedStoreMode());
+        const data = await scraperManager.searchAll(query, getSelectedStoreMode());
+        const { products, errors, sources, stores, dealBadges, dealScores, bestDeal } = data;
+        APP_STATE.dealBadges = dealBadges || {};
+        APP_STATE.dealScores = dealScores || {};
+        APP_STATE.bestDealId = bestDeal?.id || null;
         if (products.length === 0) {
             APP_STATE.allProducts = [];
             APP_STATE.filteredProducts = [];
@@ -787,7 +794,11 @@ function renderProducts(products) {
 
     const renderCard = (product) => {
         const isCheapest = cheapest && ((product.id && product.id === cheapest.id) || product.url === cheapest.url);
-        const isBestDeal = bestDeal && ((product.id && product.id === bestDeal.id) || product.url === bestDeal.url);
+        const isBestDeal = APP_STATE.bestDealId
+            ? String(product.id) === String(APP_STATE.bestDealId)
+            : bestDeal && ((product.id && product.id === bestDeal.id) || product.url === bestDeal.url);
+        const badges = Array.isArray(APP_STATE.dealBadges?.[product.id]) ? APP_STATE.dealBadges[product.id] : [];
+        const dealBadgeHTML = badges.filter(b => b !== 'Best Price' && b !== 'Best Deal').map(b => '<span class="deal-signal-badge">' + escapeHTML(b) + '</span>').join('');
         const isWishlisted = APP_STATE.wishlist.some(w => w.id === product.id);
         const isCompared = APP_STATE.comparisonList.some(c => c.id === product.id);
         const marketplaceClass = getMarketplaceClass(product.marketplace);
@@ -806,6 +817,7 @@ function renderProducts(products) {
                 <div class="card-corner-badges">
                     ${isCheapest ? '<span class="corner-badge best-price-badge">🏷 Best Price</span>' : ''}
                     ${isBestDeal ? '<span class="corner-badge best-deal-badge">★ Best Deal</span>' : ''}
+                    ${dealBadgeHTML}
                 </div>
                 <span class="marketplace-badge ${marketplaceClass}">${product.marketplace} ${product.isOfficial ? '✅ Official' : ''}</span>
                 <div class="product-image-container">
