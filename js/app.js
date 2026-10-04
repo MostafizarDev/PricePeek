@@ -40,6 +40,9 @@ const APP_STATE = {
     dealBadges: {},
     dealScores: {},
     bestDealId: null,
+    searchErrors: [],
+    searchStores: [],
+    searchSources: [],
     storeSelection: localStorage.getItem('pricepeekStoreSelection') || 'smart',
 };
 
@@ -153,6 +156,10 @@ if (storesSection) storesSection.style.display = 'none';
         APP_STATE.dealBadges = dealBadges || {};
         APP_STATE.dealScores = dealScores || {};
         APP_STATE.bestDealId = bestDeal?.id || null;
+        APP_STATE.searchErrors = Array.isArray(errors) ? errors : [];
+        APP_STATE.searchStores = Array.isArray(stores) ? stores : [];
+        APP_STATE.searchSources = Array.isArray(sources) ? sources : [];
+        renderSearchStatus();
         if (products.length === 0) {
             APP_STATE.allProducts = [];
             APP_STATE.filteredProducts = [];
@@ -764,23 +771,7 @@ function renderProductSkeletons(count = 8) {
 function renderSearchError(message = 'We could not load prices right now.') { const grid=document.getElementById('productGrid'); if(!grid)return; grid.innerHTML='<div class="error-state"><h3>Something went wrong</h3><p>'+escapeHTML(message)+'</p><button type="button" onclick="refreshResults()">Try Again</button></div>'; }
 
 // ============ RENDER PRODUCTS (rating with one decimal) ============
-function getBestDealProduct(products) {
-    const inStock = products.filter(p => p.inStock && p.price);
-    if (!inStock.length) return null;
-    const maxReview = Math.max(...inStock.map(p => p.reviewCount || 0));
-    const minPrice = Math.min(...inStock.map(p => p.price));
-    const maxSold = Math.max(...inStock.map(p => p.soldCount || 0));
-    const getScore = (product) => {
-        let score = 0;
-        if (maxReview > 0 && product.reviewCount) score += (product.reviewCount / maxReview) * 50;
-        if (product.price && minPrice > 0) score += (minPrice / product.price) * 30;
-        if (product.discount) score += (product.discount / 100) * 15;
-        if (maxSold > 0 && product.soldCount) score += (product.soldCount / maxSold) * 5;
-        return score;
-    };
-    return inStock.reduce((best, current) => getScore(current) > getScore(best) ? current : best);
-}
-
+/* Best Deal is calculated by the backend deal engine. */
 function renderProducts(products) {
     const grid = document.getElementById('productGrid');
     if (products.length === 0) {
@@ -790,19 +781,28 @@ function renderProducts(products) {
     const exactProducts = products.filter(p => p.matchType !== 'similar');
     const similarProducts = products.filter(p => p.matchType === 'similar');
     const cheapest = products.filter(p => p.inStock && p.price != null).sort((a,b) => a.price - b.price)[0];
-    const bestDeal = getBestDealProduct(products);
 
     const renderCard = (product) => {
         const isCheapest = cheapest && ((product.id && product.id === cheapest.id) || product.url === cheapest.url);
-        const isBestDeal = APP_STATE.bestDealId
-            ? String(product.id) === String(APP_STATE.bestDealId)
-            : bestDeal && ((product.id && product.id === bestDeal.id) || product.url === bestDeal.url);
+        const isBestDeal = APP_STATE.bestDealId && String(product.id) === String(APP_STATE.bestDealId);
         const badges = Array.isArray(APP_STATE.dealBadges?.[product.id]) ? APP_STATE.dealBadges[product.id] : [];
         const dealBadgeHTML = badges.filter(b => b !== 'Best Price' && b !== 'Best Deal').map(b => '<span class="deal-signal-badge">' + escapeHTML(b) + '</span>').join('');
         const isWishlisted = APP_STATE.wishlist.some(w => w.id === product.id);
         const isCompared = APP_STATE.comparisonList.some(c => c.id === product.id);
         const marketplaceClass = getMarketplaceClass(product.marketplace);
         const sellerHTML = product.sellerName ? `<div class="product-seller" style="font-size:0.72rem; color:var(--gray-500); margin-top:3px;">Seller: ${escapeHTML(product.sellerName)}</div>` : '';
+        const sellerOffers = Array.isArray(product.sellerOffers) ? product.sellerOffers : [];
+        const sellerOffersHTML = sellerOffers.length > 1 ? `<details class="seller-offers">
+            <summary>Compare ${sellerOffers.length} sellers</summary>
+            <div class="seller-offers-list">
+                ${sellerOffers.slice(0, 8).map(offer => `<div class="seller-offer-row">
+                    <span class="seller-offer-name">${escapeHTML(offer.sellerName || 'Seller')}</span>
+                    <strong>${formatBDT(offer.price)}</strong>
+                    ${offer.isOfficial ? '<span class="seller-mini-badge">Official</span>' : ''}
+                    ${offer.url ? '<a href="' + escapeHTML(offer.url) + '" target="_blank" rel="noopener noreferrer">View</a>' : ''}
+                </div>`).join('')}
+            </div>
+        </details>` : '';
 
         let metaHTML = '';
         if (product.rating) {
@@ -825,6 +825,7 @@ function renderProducts(products) {
                 </div>
                 <div class="product-name">${escapeHTML(product.name || 'Unknown Product')}</div>
                 ${sellerHTML}
+                ${sellerOffersHTML}
                 <div class="product-pricing">
                     <span class="current-price">${formatBDT(product.price)}</span>
                     ${product.originalPrice && product.originalPrice > product.price ? `<span class="original-price">${formatBDT(product.originalPrice)}</span>` : ''}
