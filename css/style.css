@@ -4048,3 +4048,52 @@ body.dark .comparison-value-cell{color:var(--gray-700);}
 
 /* Hide the old hero store selector if any cached markup remains. */
 .store-search-selector{display:none !important;}
+
+/* Compact store selector: icon only */
+.store-dropdown-trigger{
+    width:34px;
+    height:34px;
+    min-height:34px;
+    padding:0;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    border:0;
+    border-radius:9px;
+    background:transparent;
+    color:var(--gray-500);
+    box-shadow:none;
+}
+.store-dropdown-trigger:hover,
+.store-dropdown.open .store-dropdown-trigger{
+    background:var(--gray-100);
+    color:var(--gray-700);
+    border:0;
+}
+.store-dropdown-icon{
+    width:19px;
+    height:19px;
+    display:block;
+}
+.store-dropdown-icon path{
+    vector-effect:non-scaling-stroke;
+}
+.store-dropdown-text,
+.store-dropdown-chevron{
+    display:none !important;
+}
+.dark .store-dropdown-trigger:hover,
+.dark .store-dropdown.open .store-dropdown-trigger{
+    background:var(--gray-700);
+    color:var(--gray-200);
+}
+@media(max-width:520px){
+    .store-dropdown-trigger{
+        width:32px;
+        height:32px;
+    }
+    .store-dropdown-icon{
+        width:18px;
+        height:18px;
+    }
+}
