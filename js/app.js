@@ -745,7 +745,12 @@ function applyFiltersAndSort() {
         } else if (APP_STATE.currentFilter === 'similar') {
             products = products.filter(p => p.matchType === 'similar');
         } else {
-            products = products.filter(p => p.marketplace === APP_STATE.currentFilter);
+            const filterMarketplace = APP_STATE.currentFilter === 'Apple Gadgets'
+                ? 'AppleGadgets'
+                : APP_STATE.currentFilter;
+            products = products.filter(p =>
+                String(p.marketplace || '').trim().toLowerCase() === String(filterMarketplace).trim().toLowerCase()
+            );
         }
     }
 
