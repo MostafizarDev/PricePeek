@@ -1,6 +1,7 @@
 const axios = require('axios');
 const { resolveStores } = require('../lib/storeRegistry');
 const { normalizeProduct } = require('../lib/normalize');
+const { matchProducts } = require('../lib/productMatcher');
 
 const CACHE_TTL = 60 * 1000;
 const STORE_TIMEOUT = 9000;
@@ -183,12 +184,25 @@ async function searchAll(query, selection) {
     Number(a.price || Infinity) - Number(b.price || Infinity)
   );
 
-  const cleanProducts = products
-    .slice(0, 300)
+  const candidateProducts = products.slice(0, 300);
+  const matched = matchProducts(candidateProducts, query);
+
+  const cleanProducts = matched.products
+    .map(({ _score, ...product }) => product);
+
+  const cleanExactProducts = matched.exactProducts
+    .map(({ _score, ...product }) => product);
+
+  const cleanSimilarProducts = matched.similarProducts
     .map(({ _score, ...product }) => product);
 
   const data = {
     products: cleanProducts,
+    exactProducts: cleanExactProducts,
+    similarProducts: cleanSimilarProducts,
+    exactProductCount: matched.exactProductCount,
+    similarProductCount: matched.similarProductCount,
+    matchStats: matched.matchStats,
     errors,
     sources,
     storeSelection: selection || 'smart',
