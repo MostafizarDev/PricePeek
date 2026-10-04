@@ -3753,3 +3753,24 @@ body.dark .comparison-value-cell{color:var(--gray-700);}
         padding: 6px 9px;
     }
 }
+
+
+/* STEP 08: deal signal badges */
+.deal-signal-badge {
+    display: inline-flex;
+    align-items: center;
+    margin: 3px 3px 0 0;
+    padding: 3px 7px;
+    border-radius: 999px;
+    font-size: 0.66rem;
+    font-weight: 700;
+    line-height: 1;
+    background: var(--gray-100);
+    color: var(--gray-700);
+    border: 1px solid var(--gray-200);
+}
+.dark .deal-signal-badge {
+    background: var(--gray-800);
+    color: var(--gray-200);
+    border-color: var(--gray-700);
+}
