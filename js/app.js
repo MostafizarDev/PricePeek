@@ -43,7 +43,10 @@ const APP_STATE = {
     searchErrors: [],
     searchStores: [],
     searchSources: [],
-    storeSelection: localStorage.getItem('pricepeekStoreSelection') || 'smart',
+    storeSelection: (() => {
+        const saved = localStorage.getItem('pricepeekStoreSelection');
+        return saved && saved !== 'smart' ? saved : 'all';
+    })(),
 };
 
 // ============ RESULT VIEW MODE ============
@@ -67,63 +70,91 @@ function enterResultView() {
 const STORE_IDS = ['daraz','startech','ryans','applegadgets','pickaboo','gadgetgear','techland','rokomari','othoba','ajkerdeal'];
 
 function getSelectedStoreMode() {
-    return APP_STATE.storeSelection || 'smart';
+    return APP_STATE.storeSelection || 'all';
+}
+
+function getSelectedStoreIds() {
+    const mode = getSelectedStoreMode();
+    if (mode === 'all') return [...STORE_IDS];
+    return mode.split(',').filter(id => STORE_IDS.includes(id));
 }
 
 function updateStoreSelectionUI() {
-    const buttons = document.querySelectorAll('.store-option');
     const mode = getSelectedStoreMode();
+    const allSelected = mode === 'all';
+    const selectedIds = new Set(getSelectedStoreIds());
 
-    buttons.forEach(button => {
+    document.querySelectorAll('.store-option').forEach(button => {
         const id = button.dataset.store;
-        button.classList.toggle('active', mode === id || (mode !== 'smart' && mode !== 'all' && mode.split(',').includes(id)));
-        if (id === 'smart' && mode === 'smart') button.textContent = '✓ Smart Stores';
-        else if (id === 'smart') button.textContent = 'Smart Stores';
+        const checked = id === 'all' ? allSelected : selectedIds.has(id);
+        button.classList.toggle('active', checked);
+
+        const mark = button.querySelector('.store-checkmark');
+        if (mark) mark.textContent = checked ? '✓' : '';
+        button.setAttribute('aria-checked', checked ? 'true' : 'false');
     });
 
     const label = document.getElementById('storeSearchMode');
-    const help = document.getElementById('storeSearchHelp');
-
     if (label) {
-        if (mode === 'smart') label.textContent = 'Smart Stores';
-        else if (mode === 'all') label.textContent = 'All Stores';
-        else label.textContent = mode.split(',').length + ' Stores Selected';
+        if (allSelected) label.textContent = 'All Stores';
+        else if (selectedIds.size === 0) label.textContent = 'All Stores';
+        else if (selectedIds.size === 1) {
+            const button = document.querySelector('.store-option[data-store="' + Array.from(selectedIds)[0] + '"]');
+            label.textContent = button?.textContent.replace('✓', '').trim() || '1 Store';
+        } else {
+            label.textContent = selectedIds.size + ' Stores';
+        }
     }
 
-    if (help) {
-        help.textContent = mode === 'smart'
-            ? 'Smart mode automatically selects relevant stores to reduce search time.'
-            : mode === 'all'
-                ? 'All available stores will be searched. This may take longer.'
-                : 'Only the selected stores will be searched, helping reduce timeout risk.';
-    }
+    const trigger = document.getElementById('storeDropdownTrigger');
+    if (trigger) trigger.setAttribute('aria-label', allSelected ? 'Searching all stores' : label?.textContent || 'Select stores');
 }
 
-function selectStoreMode(mode, button) {
-    APP_STATE.storeSelection = mode;
-    if (mode === 'smart' || mode === 'all') {
-        document.querySelectorAll('.store-option').forEach(el => el.classList.remove('active'));
-        if (button) button.classList.add('active');
-    }
-    localStorage.setItem('pricepeekStoreSelection', mode);
+function toggleStoreDropdown(event) {
+    if (event) event.stopPropagation();
+    const dropdown = document.getElementById('storeDropdown');
+    const trigger = document.getElementById('storeDropdownTrigger');
+    if (!dropdown || !trigger) return;
+    const isOpen = dropdown.classList.toggle('open');
+    trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+
+function closeStoreDropdown() {
+    const dropdown = document.getElementById('storeDropdown');
+    const trigger = document.getElementById('storeDropdownTrigger');
+    if (!dropdown) return;
+    dropdown.classList.remove('open');
+    if (trigger) trigger.setAttribute('aria-expanded', 'false');
+}
+
+function selectStoreMode(mode) {
+    if (mode !== 'all') return;
+    APP_STATE.storeSelection = 'all';
+    localStorage.setItem('pricepeekStoreSelection', 'all');
     updateStoreSelectionUI();
 }
 
 function toggleStoreSelection(storeId) {
-    let mode = getSelectedStoreMode();
+    if (!STORE_IDS.includes(storeId)) return;
 
-    if (mode === 'smart' || mode === 'all') mode = '';
+    let selected = new Set(getSelectedStoreIds());
+    if (getSelectedStoreMode() === 'all') selected = new Set(STORE_IDS);
 
-    const selected = new Set(mode.split(',').filter(id => STORE_IDS.includes(id)));
     if (selected.has(storeId)) selected.delete(storeId);
     else selected.add(storeId);
 
-    APP_STATE.storeSelection = selected.size ? Array.from(selected).join(',') : 'smart';
+    APP_STATE.storeSelection = selected.size === STORE_IDS.length
+        ? 'all'
+        : selected.size
+            ? Array.from(selected).join(',')
+            : 'all';
+
     localStorage.setItem('pricepeekStoreSelection', APP_STATE.storeSelection);
     updateStoreSelectionUI();
 }
 
 // ============ PERFORM SEARCH (keyword) ============
+
 async function refreshResults() {
     if (APP_STATE.isSearching) return;
     const query = APP_STATE.lastSearchQuery || document.getElementById('mainSearch')?.value?.trim();
@@ -1245,7 +1276,15 @@ function init() {
             e.preventDefault();
             document.getElementById('mainSearch').focus();
         }
+        if (e.key === 'Escape') closeStoreDropdown();
     });
+
+    document.addEventListener('click', function(e) {
+        const dropdown = document.getElementById('storeDropdown');
+        if (dropdown && !dropdown.contains(e.target)) closeStoreDropdown();
+    });
+
+    updateStoreSelectionUI();
 
     updateLastUpdated();
     console.log('PricePeekBD ready.');
