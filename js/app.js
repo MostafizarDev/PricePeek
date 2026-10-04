@@ -37,6 +37,7 @@ const APP_STATE = {
     currentSort: 'price_asc',
     isSearching: false,
     lastSearchQuery: '',
+    storeSelection: localStorage.getItem('pricepeekStoreSelection') || 'smart',
 };
 
 // ============ RESULT VIEW MODE ============
@@ -54,6 +55,66 @@ function enterResultView() {
 
     const results = document.getElementById('resultsSection');
     if (results) results.classList.add('active');
+}
+
+// ============ STORE SEARCH SELECTION ============
+const STORE_IDS = ['daraz','startech','ryans','applegadgets','pickaboo','gadgetgear','techland','rokomari','othoba','ajkerdeal'];
+
+function getSelectedStoreMode() {
+    return APP_STATE.storeSelection || 'smart';
+}
+
+function updateStoreSelectionUI() {
+    const buttons = document.querySelectorAll('.store-option');
+    const mode = getSelectedStoreMode();
+
+    buttons.forEach(button => {
+        const id = button.dataset.store;
+        button.classList.toggle('active', mode === id || (mode !== 'smart' && mode !== 'all' && mode.split(',').includes(id)));
+        if (id === 'smart' && mode === 'smart') button.textContent = '✓ Smart Stores';
+        else if (id === 'smart') button.textContent = 'Smart Stores';
+    });
+
+    const label = document.getElementById('storeSearchMode');
+    const help = document.getElementById('storeSearchHelp');
+
+    if (label) {
+        if (mode === 'smart') label.textContent = 'Smart Stores';
+        else if (mode === 'all') label.textContent = 'All Stores';
+        else label.textContent = mode.split(',').length + ' Stores Selected';
+    }
+
+    if (help) {
+        help.textContent = mode === 'smart'
+            ? 'Smart mode automatically selects relevant stores to reduce search time.'
+            : mode === 'all'
+                ? 'All available stores will be searched. This may take longer.'
+                : 'Only the selected stores will be searched, helping reduce timeout risk.';
+    }
+}
+
+function selectStoreMode(mode, button) {
+    APP_STATE.storeSelection = mode;
+    if (mode === 'smart' || mode === 'all') {
+        document.querySelectorAll('.store-option').forEach(el => el.classList.remove('active'));
+        if (button) button.classList.add('active');
+    }
+    localStorage.setItem('pricepeekStoreSelection', mode);
+    updateStoreSelectionUI();
+}
+
+function toggleStoreSelection(storeId) {
+    let mode = getSelectedStoreMode();
+
+    if (mode === 'smart' || mode === 'all') mode = '';
+
+    const selected = new Set(mode.split(',').filter(id => STORE_IDS.includes(id)));
+    if (selected.has(storeId)) selected.delete(storeId);
+    else selected.add(storeId);
+
+    APP_STATE.storeSelection = selected.size ? Array.from(selected).join(',') : 'smart';
+    localStorage.setItem('pricepeekStoreSelection', APP_STATE.storeSelection);
+    updateStoreSelectionUI();
 }
 
 // ============ PERFORM SEARCH (keyword) ============
@@ -76,15 +137,15 @@ const storesSection = document.getElementById('stores-section');
 if (storesSection) storesSection.style.display = 'none';
 
     document.getElementById('loadingSpinner').classList.add('active');
-    document.getElementById('loadingText').textContent = 'Checking saved prices...';
+    document.getElementById('loadingText').textContent = getSelectedStoreMode() === 'all' ? 'Searching all stores...' : 'Searching selected stores live...';
     document.getElementById('productGrid').innerHTML = '';
     enterResultView();
-    document.getElementById('statusText').textContent = 'Searching saved prices...';
+    document.getElementById('statusText').textContent = 'Searching selected stores live...';
     const statusDot = document.querySelector('.status-dot');
     if (statusDot) statusDot.style.background = '#F59E0B';
 
     try {
-        const { products, errors } = await scraperManager.searchAll(query);
+        const { products, errors, sources, stores } = await scraperManager.searchAll(query, getSelectedStoreMode());
         if (products.length === 0) {
             APP_STATE.allProducts = [];
             APP_STATE.filteredProducts = [];
