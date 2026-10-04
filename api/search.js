@@ -5,8 +5,10 @@ const { matchProducts } = require('../lib/productMatcher');
 const { findBestDeal } = require('../lib/bestDeal');
 
 const CACHE_TTL = 60 * 1000;
-const STORE_TIMEOUT = 9000;
+const STORE_TIMEOUT = 6500;
+const CACHE_MAX_ENTRIES = 200;
 const cache = new Map();
+const inFlight = new Map();
 
 function cleanQuery(value) {
   return String(value || '').replace(/\s+/g, ' ').trim().slice(0, 160);
@@ -142,6 +144,9 @@ async function searchAll(query, selection) {
     return { ...cached.data, cached: true };
   }
 
+  if (inFlight.has(cacheKey)) return inFlight.get(cacheKey);
+
+  const run = (async () => {
   const settled = await Promise.allSettled(
     stores.map(store => searchStore(store, query))
   );
@@ -221,7 +226,19 @@ async function searchAll(query, selection) {
   };
 
   cache.set(cacheKey, { data, timestamp: Date.now() });
+  if (cache.size > CACHE_MAX_ENTRIES) {
+    const oldestKey = cache.keys().next().value;
+    if (oldestKey) cache.delete(oldestKey);
+  }
   return data;
+  })();
+
+  inFlight.set(cacheKey, run);
+  try {
+    return await run;
+  } finally {
+    inFlight.delete(cacheKey);
+  }
 }
 
 module.exports = async (req, res) => {
