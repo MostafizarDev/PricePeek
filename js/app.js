@@ -124,7 +124,7 @@ function toggleStoreSelection(storeId) {
 }
 
 // ============ PERFORM SEARCH (keyword) ============
-async async function refreshResults() {
+async function refreshResults() {
     if (APP_STATE.isSearching) return;
     const query = APP_STATE.lastSearchQuery || document.getElementById('mainSearch')?.value?.trim();
     if (!query) return;
