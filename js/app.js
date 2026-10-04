@@ -45,7 +45,10 @@ const APP_STATE = {
     searchSources: [],
     storeSelection: (() => {
         const saved = localStorage.getItem('pricepeekStoreSelection');
-        return saved && saved !== 'smart' ? saved : 'all';
+        const allowed = new Set(['daraz','startech','applegadgets','pickaboo','gadgetgear','techland','rokomari','othoba','ajkerdeal']);
+        if (!saved || saved === 'smart' || saved === 'all' || saved === 'all-stores') return 'all';
+        const ids = saved.split(',').map(id => id.trim()).filter(id => allowed.has(id));
+        return ids.length ? ids.join(',') : 'all';
     })(),
 };
 
