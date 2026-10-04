@@ -3,19 +3,15 @@ name: PricePeek Code Check
 on:
   push:
     paths:
-      - 'crawler/**'
       - 'lib/**'
-      - 'api/search.js'
-      - 'js/app.js'
-      - 'google-apps-script/Code.gs'
+      - 'api/**'
+      - 'js/**'
       - '.github/workflows/**'
   pull_request:
     paths:
-      - 'crawler/**'
       - 'lib/**'
-      - 'api/search.js'
-      - 'js/app.js'
-      - 'google-apps-script/Code.gs'
+      - 'api/**'
+      - 'js/**'
       - '.github/workflows/**'
 
 jobs:
@@ -26,14 +22,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Install dependencies
+        run: npm install
       - name: Check JavaScript syntax
         run: |
           set -e
-          node --check crawler/run.js
-          node --check crawler/catalogCache.js
           node --check lib/baseScraper.js
           node --check lib/normalize.js
+          node --check lib/storeRegistry.js
           node --check lib/daraz.js
+          node --check lib/startech.js
+          node --check lib/ryans.js
+          node --check lib/applegadgets.js
           node --check api/search.js
+          node --check js/scrapers.js
           node --check js/app.js
-          node --check google-apps-script/Code.gs
