@@ -45,7 +45,7 @@ const APP_STATE = {
     searchSources: [],
     storeSelection: (() => {
         const saved = localStorage.getItem('pricepeekStoreSelection');
-        const allowed = new Set(['daraz','startech','applegadgets','gadgetgear','computermania']);
+        const allowed = new Set(['daraz','startech','applegadgets']);
         if (!saved || saved === 'smart' || saved === 'all' || saved === 'all-stores') return 'all';
         const ids = saved.split(',').map(id => id.trim()).filter(id => allowed.has(id));
         return ids.length ? ids.join(',') : 'all';
@@ -70,7 +70,7 @@ function enterResultView() {
 }
 
 // ============ STORE SEARCH SELECTION ============
-const STORE_IDS = ['daraz','startech','applegadgets','gadgetgear','computermania'];
+const STORE_IDS = ['daraz','startech','applegadgets'];
 
 function getSelectedStoreMode() {
     return APP_STATE.storeSelection || 'all';
